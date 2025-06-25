@@ -54,3 +54,8 @@
 └── README.md
 ```
 
+## 谈论交流
+
+[频道](https://t.me/LinYuanOAO)
+
+[群组](https://t.me/LinYuanOvO)
