@@ -1,8 +1,10 @@
+__pycache__/
+
 /web/*_cookie.json
 /version
 /miniapp/code/version/
 /miniapp/version/
-/miniapp/*/
+/miniapp/private/
 
 # 忽略文件
 discuz_login.py
