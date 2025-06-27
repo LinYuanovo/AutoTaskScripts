@@ -228,8 +228,8 @@ class AutoTask:
             response.raise_for_status()
             response_json = response.json()
             if response_json['code'] == 200:
-                balance = response_json['data']['award']
-                logging.info(f"[余额]: {balance}")
+                balance = response_json['data']['award_balance']
+                logging.info(f"[余额]: {balance}元")
                 return balance
             else:
                 logging.warning(f"[获取用户余额]: {response_json['message']}")
