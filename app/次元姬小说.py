@@ -8,12 +8,17 @@
  cron:  10 8,15 * * *
  更新日志：
  2025/6/27 V1.0 初始化脚本
+ 2025/6/28 V1.1 优化阅读逻辑 增加阅读时间判断，如果已阅读时间超过50分钟，则跳过模拟阅读
+ 2025/6/28 V1.2 增加自动订阅 需要填写bookId和从第多少章开始订阅
 """
 
 MULTI_ACCOUNT_SPLIT = ["\n", "@"] # 多账户分隔符列表
 NOTIFY = False # 是否推送日志，默认不推送，True则推送
+AUTO_ORDER_BOOK_ID = "" # 自动订阅的小说bookId，填了则自动订阅，否则不订阅，只有第一个号会进行订阅
+AUTO_ORDER_BOOK_CHAPTER = 1 # 从第多少章开始自动订阅，默认使用所有代币往后进行订阅
 
 import os
+import random
 import time
 import json
 import logging
@@ -151,7 +156,7 @@ class AutoTask:
         """
         response = self.request("POST", "sign/sign", headers, {})
         if response["code"] == "200":
-            self.log(f"签到: {response['msg']}", level="info")
+            self.log(f"签到: {response['msg']}")
             return response
         else:
             self.log(f"签到: {response['msg']}", level="warning")
@@ -169,7 +174,7 @@ class AutoTask:
         else:
             self.log(f"获取任务列表: {response['msg']}", level="warning")
             return False
-        
+    
     def read_start(self, headers):
         """
         开始阅读
@@ -268,7 +273,7 @@ class AutoTask:
         }
         response = self.request("POST", "task/receiveTaskReward", headers, data)
         if response["code"] == "200":
-            self.log(f"领取奖励: {response['msg']}", level="info", push=False)
+            self.log(f"领取奖励: {response['msg']}", push=False)
             return response
         else:
             self.log(f"领取奖励: {response['msg']}", level="error")
@@ -282,13 +287,56 @@ class AutoTask:
         if response["code"] == "200":
             nikeName = response["data"]["accountInfo"]["nickName"]
             # 代币
-            couponBalance = response["data"]["accountInfo"]["couponBalance"]
+            couponBalance = float(response["data"]["accountInfo"]["couponBalance"])
             # 推荐票
-            dayCount = response["data"]["accountInfo"]["dayCount"]
-            self.log(f"{nikeName} 代币:{couponBalance} 推荐票:{dayCount}", level="info")
-            return response
+            dayCount = int(response["data"]["accountInfo"]["dayCount"])
+            self.log(f"{nikeName} 代币:{couponBalance} 推荐票:{dayCount}")
+            return couponBalance
         else:
             self.log(f"获取用户信息: {response['msg']}", level="error")
+            return False 
+
+    def get_book_chapter_info(self, headers, bookId):
+        """
+        获取小说章节信息
+        :param bookId: 小说ID
+        :return: 小说名称, 章节列表
+        """
+        data = {
+            "sortType": "1",
+            "pageNo": "1",
+            "pageSize": "9999",
+            "bookId": bookId,
+            "timestamp": int(time.time() * 1000)
+        }
+        response = self.request("GET", "chapter/getChapterListByBookId", headers, data)
+        if response["code"] == "200":
+            book_name = response["data"]["bookChapter"]["bookName"]
+            chapter_list = response["data"]["bookChapter"]["chapterList"]
+            return book_name, chapter_list
+        else:
+            self.log(f"获取小说章节信息: {response['msg']}", level="error")
+            return False
+
+    def order_book_chapter(self, headers, bookId, chapterId):
+        """
+        订阅章节
+        :param bookId: 小说ID
+        :param chapterId: 章节ID
+        """
+        data = {
+            "buyCount": "1",
+            "productId": chapterId,
+            "viewType": "2",
+            "consumeType": "1",
+            "bookId": bookId,
+            "timestamp": int(time.time() * 1000)
+        }
+        response = self.request("POST", "order/consume", headers, data)
+        if response["code"] == "200":
+            return True
+        else:
+            self.log(f"订阅章节: {response['msg']}", level="error")
             return False
 
     def run_for_account(self, index, token, deviceno):
@@ -307,21 +355,34 @@ class AutoTask:
         }
         # 签到
         self.signin(headers)
-        for i in range(10):
-            # 开始阅读
-            readId = self.read_start(headers)
-            time.sleep(5)
-            if readId:
-                # 阅读章节
-                readChapterId = self.read_start_chapter(headers, readId)
-                self.log(f"模拟第{i+1}次阅读中，请勿停止运行脚本", push=False)
-                time.sleep(300)
-                if readChapterId:
-                    # 结束阅读章节
-                    self.read_end_chapter(headers, readChapterId)
+        # 获取任务列表
+        task_list = self.get_task_list(headers)
+        reader_time = 0
+        for task in task_list:
+            if task['actionName'] == "阅读" and task['taskState'] != "0":
+                reader_time = int(task['rewardList'][0]['actionRequire'])
+        if reader_time >= 0:
+            need_read_time = 50 - reader_time
+            self.log(f"还需要阅读{need_read_time}分钟")
+            if need_read_time > 0:
+                # 5分钟一次，太长时间会失效
+                for i in range(need_read_time // 5):
+                    # 开始阅读
+                    readId = self.read_start(headers)
                     time.sleep(5)
-            # 结束阅读
-            self.read_end(headers, readId)
+                    if readId:
+                        # 阅读章节
+                        readChapterId = self.read_start_chapter(headers, readId)
+                        self.log(f"模拟第{i+1}次阅读中，请勿停止运行脚本", push=False)
+                        time.sleep(random.randint(300, 320))
+                        if readChapterId:
+                            # 结束阅读章节
+                            self.read_end_chapter(headers, readChapterId)
+                            time.sleep(5)
+                    # 结束阅读
+                    self.read_end(headers, readId)
+        else:
+            self.log(f"已阅读{reader_time}分钟，跳过模拟阅读")
         # 获取任务列表
         task_list = self.get_task_list(headers)
         if task_list:
@@ -338,7 +399,21 @@ class AutoTask:
                     status = "已完成" if task["taskState"] == "2" else "未完成"
                     self.log(f"任务-{taskname}-{status}", level="info")
         # 获取用户信息
-        self.get_user_info(headers)
+        coupon_balance = self.get_user_info(headers)
+        # 自动订阅小说
+        if AUTO_ORDER_BOOK_ID and index == 1:
+            book_name, chapter_list = self.get_book_chapter_info(headers, AUTO_ORDER_BOOK_ID)
+            if chapter_list:
+                for index, chapter in enumerate(chapter_list, 1):
+                    # 大于等于指定章节开始订阅
+                    if index >= AUTO_ORDER_BOOK_CHAPTER and int(chapter['isFee']) == 1 and int(chapter['isBuy']) == 0:
+                        if coupon_balance >= float(chapter['price']):
+                            # 订阅
+                            if self.order_book_chapter(headers, AUTO_ORDER_BOOK_ID, chapter["chapterId"]):
+                                self.log(f"订阅 [{book_name}] - {chapter['chapterName']} 成功")
+                                coupon_balance -= float(chapter['price'])
+                        else:
+                            break
 
     def run(self):
         self.log(f"【{self.script_name}】开始执行任务")
