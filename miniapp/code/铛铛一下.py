@@ -10,7 +10,8 @@
  定时： 一天两次
  cron： 10 8,9 * * *
  更新日志：
- 2025/6/24 V1.0 初始化脚本 （提现暂时未知是否可用）
+ 2025/6/24 V1.0 初始化脚本
+ 2025/6/30 V1.1 修复提现问题
 """
 
 DEFAULT_WITHDRAW_BALANCE = 0.3 # 默认超过该金额进行提现，需大于等于0.3
@@ -390,6 +391,7 @@ class AutoTask:
                 else:
                     session = requests.Session()
 
+                session.headers["User-Agent"] = self.user_agent
                 # 执行微信授权
                 code = self.wx_code_auth(wx_id)
                 if code:
