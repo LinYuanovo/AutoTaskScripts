@@ -34,7 +34,7 @@ class AutoTask:
         self.proxy_url = os.getenv("PROXY_API_URL") # 代理api，返回一条txt文本，内容为代理ip:端口
         self.host = ""
         self.unionid = ""
-        self.nikename = ""
+        self.nickname = ""
         self.user_agent = "Mozilla/5.0 (Linux; Android 12; M2012K11AC Build/SKQ1.220303.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/134.0.6998.136 Mobile Safari/537.36 XWEB/1340129 MMWEBSDK/20240301 MMWEBID/9871 MicroMessenger/8.0.48.2580(0x28003036) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64 MiniProgramEnv/android"
         self.setup_logging()
         
@@ -144,13 +144,13 @@ class AutoTask:
             response = session.post(url, params=params, data=payload, timeout=5)
             response_json = response.json()
             if response_json['errcode'] == 8000:
-                self.log(f"[{self.nikename}] 每日C 签到: 成功，获得{response_json['data']['score']}VC值")
+                self.log(f"[{self.nickname}] 每日C 签到: 成功，获得{response_json['data']['score']}VC值")
                 return True
             else:
-                self.log(f"[{self.nikename}] 每日C 签到: {response_json['errmsg']}", level="warning")
+                self.log(f"[{self.nickname}] 每日C 签到: {response_json['errmsg']}", level="warning")
                 return False
         except Exception as e:
-            self.log(f"[{self.nikename}] 每日C 签到: 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
+            self.log(f"[{self.nickname}] 每日C 签到: 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
             return False
         
     def daily_c_video(self, session):
@@ -168,13 +168,13 @@ class AutoTask:
             response = session.post(url, params=params, data=payload, timeout=5)
             response_json = response.json()
             if response_json['errcode'] == 8000:
-                self.log(f"[{self.nikename}] 每日C 视频: 请求成功")
+                self.log(f"[{self.nickname}] 每日C 视频: 请求成功")
                 return True
             else:
-                self.log(f"[{self.nikename}] 每日C 视频: {response_json['errmsg']}", level="warning")
+                self.log(f"[{self.nickname}] 每日C 视频: {response_json['errmsg']}", level="warning")
                 return False
         except Exception as e:
-            self.log(f"[{self.nikename}] 每日C 视频: 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
+            self.log(f"[{self.nickname}] 每日C 视频: 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
             return False
         
     def daily_c_mini_game(self, session):
@@ -191,13 +191,13 @@ class AutoTask:
             response = session.post(url, json=payload, timeout=5)
             response_json = response.json()
             if response_json['code'] == 0:
-                self.log(f"[{self.nikename}] 每日C 小游戏: 保存成绩成功")
+                self.log(f"[{self.nickname}] 每日C 小游戏: 保存成绩成功")
                 return True
             else:
-                self.log(f"[{self.nikename}] 每日C 小游戏: {response_json['msg']}", level="warning")
+                self.log(f"[{self.nickname}] 每日C 小游戏: {response_json['msg']}", level="warning")
                 return False
         except Exception as e:
-            self.log(f"[{self.nikename}] 每日C 小游戏: 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
+            self.log(f"[{self.nickname}] 每日C 小游戏: 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
             return False
         
     def daily_c_write_invite_unionid_list(self, unionid_list):
@@ -226,7 +226,7 @@ class AutoTask:
                 unionid_list = f.readlines()
             return unionid_list
         except Exception as e:
-            self.log(f"[{self.nikename}] 每日C 获取邀请unionid: 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
+            self.log(f"[{self.nickname}] 每日C 获取邀请unionid: 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
             return []
     
     def daily_c_invite(self, session, unionid):
@@ -245,18 +245,18 @@ class AutoTask:
             response = session.post(url, params=params, data=payload, timeout=5)
             response_json = response.json()
             if response_json['errcode'] == 8000:
-                self.nikename = response_json['data']['nickname']
+                self.nickname = response_json['data']['nickname']
                 if unionid != self.unionid:
-                    self.log(f"[{self.nikename}] 每日C 尝试邀请: 成功")
+                    self.log(f"[{self.nickname}] 每日C 尝试邀请: 成功")
                 else:
-                    self.log(f"[{self.nikename}] 每日C 任务: 签到 {response_json['data']['sign_in_score']}/{response_json['data']['daily_sign_in_score']} 视频 {response_json['data']['video_score']}/{response_json['data']['daily_video_score']} 分享 {response_json['data']['share_score']}/{response_json['data']['daily_share_score']} 小游戏 {response_json['data']['game_score']}/{response_json['data']['daily_game_score']}""")
-                    self.log(f"[{self.nikename}] 每日C 总VC值: {response_json['data']['score']}")
+                    self.log(f"[{self.nickname}] 每日C 任务: 签到 {response_json['data']['sign_in_score']}/{response_json['data']['daily_sign_in_score']} 视频 {response_json['data']['video_score']}/{response_json['data']['daily_video_score']} 分享 {response_json['data']['share_score']}/{response_json['data']['daily_share_score']} 小游戏 {response_json['data']['game_score']}/{response_json['data']['daily_game_score']}""")
+                    self.log(f"[{self.nickname}] 每日C 总VC值: {response_json['data']['score']}")
                     return True
             else:
-                self.log(f"[{self.nikename}] 每日C 尝试邀请: {response_json['errmsg']}", level="warning")
+                self.log(f"[{self.nickname}] 每日C 尝试邀请: {response_json['errmsg']}", level="warning")
                 return False
         except Exception as e:
-            self.log(f"[{self.nikename}] 每日C 尝试邀请: 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
+            self.log(f"[{self.nickname}] 每日C 尝试邀请: 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
             return False
         
     def run(self):

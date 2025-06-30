@@ -8,6 +8,7 @@
  cron： 10 8 * * *
  更新日志：
  2025/6/24  初始化脚本
+ 2025/6/26  修复重复提现
 """
 
 DEFAULT_WITHDRAW_BALANCE = 1 # 默认超过该金额进行提现，需大于等于1
@@ -296,7 +297,7 @@ class AutoTask:
                 balance = float(self.get_user_balance(session, username))
                 time.sleep(random.randint(3, 5))
                 # 提现
-                if balance > DEFAULT_WITHDRAW_BALANCE:
+                if balance >= DEFAULT_WITHDRAW_BALANCE:
                     logging.info(f"[提现]: 余额大于{DEFAULT_WITHDRAW_BALANCE}，开始尝试提现")
                     self.withdraw(session, username, balance)
                     time.sleep(random.randint(3, 5))

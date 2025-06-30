@@ -53,7 +53,7 @@ class AutoTask:
         self.wx_code_url = os.getenv("soy_codeurl_data")
         self.wx_code_token = os.getenv("soy_codetoken_data")
         self.host = "fxh.ftms.com.cn"
-        self.nikename = ""
+        self.nickname = ""
         self.user_agent = "Mozilla/5.0 (Linux; Android 12; M2012K11AC Build/SKQ1.220303.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/134.0.6998.136 Mobile Safari/537.36 XWEB/1340129 MMWEBSDK/20240301 MMWEBID/9871 MicroMessenger/8.0.48.2580(0x28003036) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64 MiniProgramEnv/android"
         self.setup_logging()
         
@@ -207,10 +207,10 @@ class AutoTask:
             response_json = response.json()
             if int(response_json['code']) == 200:
                 token = response_json['data']['token']
-                self.nikename = response_json['data']['customerInfoCacheDto']['name']
+                self.nickname = response_json['data']['customerInfoCacheDto']['name']
                 session.headers["Authorization"] = token
                 session.headers["sessionKey"] = token
-                self.log(f"[{self.nikename}] 登录: 成功")
+                self.log(f"[{self.nickname}] 登录: 成功")
                 return True
             else:
                 self.log(f"[登录] 失败，错误信息: {response_json['message']}", level="error")
@@ -237,16 +237,16 @@ class AutoTask:
             response_json = response.json()
             if int(response_json['code']) == 200:
                 if not response_json['data']['reachLimitTimes']:
-                    self.log(f"[{self.nikename}] 签到: 成功")
+                    self.log(f"[{self.nickname}] 签到: 成功")
                     return True
                 else:
-                    self.log(f"[{self.nikename}] 签到: 今日已签到")
+                    self.log(f"[{self.nickname}] 签到: 今日已签到")
                     return False
             else:
-                self.log(f"[{self.nikename}] 签到: 发生错误: {response_json['message']}", level="error")
+                self.log(f"[{self.nickname}] 签到: 发生错误: {response_json['message']}", level="error")
                 return False
         except Exception as e:
-            self.log(f"[{self.nikename}] 签到: 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
+            self.log(f"[{self.nickname}] 签到: 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
             return False
         
     def get_points(self, session):
@@ -260,13 +260,13 @@ class AutoTask:
             response = session.get(url, timeout=5)
             response_json = response.json()
             if int(response_json['code']) == 200:
-                self.log(f"[{self.nikename}] 积分余额: {response_json['data']['totalPoints']}")
+                self.log(f"[{self.nickname}] 积分余额: {response_json['data']['totalPoints']}")
                 return response_json['data']['totalPoints']
             else:
-                self.log(f"[{self.nikename}] 积分余额: 发生错误: {response_json['message']}", level="error")
+                self.log(f"[{self.nickname}] 积分余额: 发生错误: {response_json['message']}", level="error")
                 return False
         except Exception as e:
-            self.log(f"[{self.nikename}] 积分余额: 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
+            self.log(f"[{self.nickname}] 积分余额: 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
             return False
         
 
