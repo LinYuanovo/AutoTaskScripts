@@ -8,6 +8,8 @@
  cron:  10 8,9 * * *
  更新日志：
  2025/6/30 V1.0 初始化脚本
+ 2025/6/30 V1.1 修复助力错账号问题
+ 2025/6/30 V1.2 修复查询信息错误
 """
 
 MULTI_ACCOUNT_SPLIT = ["\n", "@"] # 多账号分隔符列表
@@ -239,12 +241,12 @@ class AutoTask:
             params = {
                 "_": int(time.time()*1000),
             }
-            payload = f"unionid={self.unionid}&refer={unionid}&timestamp={int(time.time())}"
+            payload = f"unionid={unionid}&refer={self.unionid}&timestamp={int(time.time())}"
             response = session.post(url, params=params, data=payload, timeout=5)
             response_json = response.json()
             if response_json['errcode'] == 8000:
                 self.nikename = response_json['data']['nickname']
-                if unionid:
+                if unionid != self.unionid:
                     self.log(f"[{self.nikename}] 每日C 尝试邀请: 成功")
                 else:
                     self.log(f"[{self.nikename}] 每日C 任务: 签到 {response_json['data']['sign_in_score']}/{response_json['data']['daily_sign_in_score']} 视频 {response_json['data']['video_score']}/{response_json['data']['daily_video_score']} 分享 {response_json['data']['share_score']}/{response_json['data']['daily_share_score']} 小游戏 {response_json['data']['game_score']}/{response_json['data']['daily_game_score']}""")
@@ -290,7 +292,7 @@ class AutoTask:
                 session.headers["Content-Type"] = "application/x-www-form-urlencoded"
                 
                 # 积分
-                self.daily_c_invite(session, "")
+                self.daily_c_invite(session, self.unionid)
                 # 签到
                 self.daily_c_signin(session)
                 # 视频
@@ -308,7 +310,7 @@ class AutoTask:
                     for invite_unionid in invite_unionid_list:
                         self.daily_c_invite(session, invite_unionid)
                 # 积分
-                self.daily_c_invite(session, "")
+                self.daily_c_invite(session, self.unionid)
                 # 当前账号unionid写入邀请unionid列表
                 unionid_list.append(self.unionid)
                 
