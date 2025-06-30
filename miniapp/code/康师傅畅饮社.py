@@ -343,7 +343,7 @@ class AutoTask:
     
     def daily_c_invite(self, session, unionid):
         """
-        活动每日C 邀请
+        活动每日C 邀请/查信息
         :param session: session
         :param unionid: 邀请unionid
         :return: 邀请结果
