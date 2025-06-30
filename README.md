@@ -40,6 +40,7 @@
 |                   银鱼质享                    |    ✅️     |                   看视频、提现                   |     yyzx     |      n05.sentezhenxuan.com域名下**authori-zation**      |          |
 |                    飞蚂蚁                     |    ✅️     | 签到、步数兑换、奖池投注、奖池签到、获取用户豆子 |     fmy      |     openapp.fmy90.com域名下请求中**authorization**      |          |
 | [康师傅畅饮社-每日C](https://s.c1ns.cn/GekGz) |    ✅️     |                签到、看视频、邀请                | ksf_unionid  | ksfdailyc-api.teown.com 域名下请求体body中的**unionid** |          |
+|   [一汽丰田丰享汇](https://s.c1ns.cn/IukuX)   |    ✅️     |                   签到、查积分                   |   yqftfxh    |     fxh.ftms.com.cn 域名下请求中**Authorization**值     |          |
 
 ## code版小程序
 
@@ -54,6 +55,7 @@
 | 深圳体育湾春茧未来荟 |    ✅️     |         签到         |                                                              |
 |      统一梦时代      |    ✅️     | 签到、抽奖、查询积分 |                                                              |
 | [康师傅畅饮社](https://s.c1ns.cn/GekGz) | ✅️ | 签到、查积分、每日C活动(签到、视频、邀请、小游戏) | |
+| [一汽丰田丰享汇](https://s.c1ns.cn/IukuX) | ✅️ | 签到、查积分 | |
 
 ## 目录说明
 
