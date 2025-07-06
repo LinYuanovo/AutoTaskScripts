@@ -119,29 +119,29 @@ class AutoTask:
         """
         try:
             # 从环境变量获取cookie
-            soy_wxid_data = os.getenv(f"soy_wxid_data")
-            if not soy_wxid_data:
-                self.log("[检查环境变量] 没有找到环境变量soy_wxid_data，请检查环境变量", level="error")
+            sfys_token = os.getenv(f"sfys_token")
+            if not sfys_token:
+                self.log("[检查环境变量] 没有找到环境变量sfys_token，请检查环境变量", level="error")
                 return None
 
             # 自动检测分隔符
             split_char = None
             for sep in MULTI_ACCOUNT_SPLIT:
-                if sep in soy_wxid_data:
+                if sep in sfys_token:
                     split_char = sep
                     break
             if not split_char:
                 # 如果都没有分隔符，默认当作单账号
-                soy_wxid_datas = [soy_wxid_data]
+                sfys_tokens = [sfys_token]
             else:
-                soy_wxid_datas = soy_wxid_data.split(split_char)
+                sfys_tokens = sfys_token.split(split_char)
 
-            for soy_wxid_data in soy_wxid_datas:
-                if "=" in soy_wxid_data:
-                    soy_wxid_data = soy_wxid_data.split("=")[1]
-                    yield soy_wxid_data
+            for sfys_token in sfys_tokens:
+                if "=" in sfys_token:
+                    sfys_token = sfys_token.split("=")[1]
+                    yield sfys_token
                 else:
-                    yield soy_wxid_data
+                    yield sfys_token
         except Exception as e:
             self.log(f"[检查环境变量] 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
             raise
