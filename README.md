@@ -9,6 +9,7 @@
 | :----------------: | :----------------------------------------------------------: | :-------------------------------------------------------: |
 |    DDDD_OCR_URL    |      用于识别验证码，示例 http://xxx.xx.xx.xx:8000/ocr/      | [项目搭建地址](https://github.com/sml2h3/ddddocr-fastapi) |
 |   PROXY_API_URL    |          代理api，返回一条txt文本内容为代理ip:端口           |    [示例注册地址](https://www.ipzan.com?pid=s20qm4fr8)    |
+|     LY_NOTIFY      |       是否推送通知，填True则推送，不设置该变量则不推送       |                   可选，脚本默认不推送                    |
 |  soy_codeurl_data  | 微信授权协议获取code的url，示例 http://xxxx/prod-api/wechat/api/getMiniProgramCode |                      code版脚本必须                       |
 | soy_codetoken_data |        上述变量对应的鉴权token，如协议不需要没有为空         |                      code版脚本必须                       |
 |   soy_wxid_data    | 微信授权获取code的wxid，示例 wxid_xxxxxxxxx522，通过wxid取出对应的code |                      code版脚本必须                       |
@@ -34,16 +35,17 @@
 
 ## 支持小程序
 
-|                     名称                      | 是否有效 |                       功能                       |     变量     |                        变量说明                         |       特殊说明        |
-| :-------------------------------------------: | :------: | :----------------------------------------------: | :----------: | :-----------------------------------------------------: | :-------------------: |
-|                    回收猿                     |    ✅️     |              签到、抽奖、满余额提现              | hsy_username |        www.52bjy.com 请求url参数中的**username**        |                       |
-|                   银鱼质享                    |    ✅️     |                   看视频、提现                   |     yyzx     |      n05.sentezhenxuan.com域名下**authori-zation**      |                       |
-|                    飞蚂蚁                     |    ✅️     | 签到、步数兑换、奖池投注、奖池签到、获取用户豆子 |     fmy      |     openapp.fmy90.com域名下请求中**authorization**      |                       |
-| [康师傅畅饮社-每日C](https://s.c1ns.cn/GekGz) |    ✅️     |                签到、看视频、邀请                | ksf_unionid  | ksfdailyc-api.teown.com 域名下请求体body中的**unionid** |                       |
-|   [一汽丰田丰享汇](https://s.c1ns.cn/IukuX)   |    ✅️     |                   签到、查积分                   |   yqftfxh    |     fxh.ftms.com.cn 域名下请求中**Authorization**值     |                       |
-|       [牛油谷](https://s.c1ns.cn/zfe6A)       |    ✅️     |                   签到、查积分                   |  nyg_token   |      app.niuyougu.com.cn 域名下请求中的**token**值      |                       |
-|    [社服益寿活动](https://a.c1ns.cn/m6e7K)    |    ✅️     |               签到、问答、查询信息               |  sfys_token  |     ylapi.luckystarpay.com 域名请求中x-**token**值      | 每日秒到0.1，貌似会黑 |
-|     [老友时光汇](https://a.c1ns.cn/Kuq1I)     |    ✅️     |               签到、问答、查询信息               | lysgh_token  |      api.zijinzhaoyao.com 域名请求中x-**token**值       |         同上          |
+|                     名称                      | 是否有效 |                       功能                       |     变量     |                           变量说明                           |         特殊说明         |
+| :-------------------------------------------: | :------: | :----------------------------------------------: | :----------: | :----------------------------------------------------------: | :----------------------: |
+|                    回收猿                     |    ✅️     |              签到、抽奖、满余额提现              | hsy_username |          www.52bjy.com 请求url参数中的**username**           |                          |
+|                   银鱼质享                    |    ✅️     |                   看视频、提现                   |     yyzx     |        n05.sentezhenxuan.com域名下**authori-zation**         |                          |
+|                    飞蚂蚁                     |    ✅️     | 签到、步数兑换、奖池投注、奖池签到、获取用户豆子 |     fmy      |        openapp.fmy90.com域名下请求中**authorization**        |                          |
+| [康师傅畅饮社-每日C](https://s.c1ns.cn/GekGz) |    ✅️     |                签到、看视频、邀请                | ksf_unionid  |   ksfdailyc-api.teown.com 域名下请求体body中的**unionid**    |                          |
+|   [一汽丰田丰享汇](https://s.c1ns.cn/IukuX)   |    ✅️     |                   签到、查积分                   |   yqftfxh    |       fxh.ftms.com.cn 域名下请求中**Authorization**值        |                          |
+|       [牛油谷](https://s.c1ns.cn/zfe6A)       |    ✅️     |                   签到、查积分                   |  nyg_token   |        app.niuyougu.com.cn 域名下请求中的**token**值         |                          |
+|    [社服益寿活动](https://a.c1ns.cn/m6e7K)    |    ✅️     |               签到、问答、查询信息               |  sfys_token  |        ylapi.luckystarpay.com 域名请求中**x-token**值        |  每日秒到0.1，貌似会黑   |
+|     [老友时光汇](https://a.c1ns.cn/Kuq1I)     |    ✅️     |               签到、问答、查询信息               | lysgh_token  |         api.zijinzhaoyao.com 域名请求中**x-token**值         |           同上           |
+|      [中免日上](https://a.c1ns.cn/qbFEB)      |    ✅️     |            签到、查积分、金包子小游戏            |  zmrs_token  | https://api.cdfsunrise.com/restfulapi/Account/getAccountInfo 请求中的**Accesstoken**值 | 有效期挺长，应该是三个月 |
 
 ## code版小程序
 
