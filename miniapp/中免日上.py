@@ -10,6 +10,7 @@
  2025/7/2 V1.0 初始化脚本
  2025/7/3 V1.1 增加小游戏签到、浏览、抽奖、做包子
  2025/7/7 V1.2 通知可以设置环境变量LY_NOTIFY
+ 2025/7/8 V1.3 尝试修复火爆问题
 """
 
 import json
@@ -18,13 +19,14 @@ import re
 import time
 import requests
 import os
+import string
 import logging
 import traceback
 import ssl
 from datetime import datetime
 
 MULTI_ACCOUNT_SPLIT = ["\n", "@"] # 分隔符列表
-MULTI_ACCOUNT_PROXY = False # 是否使用多账号代理，默认不使用，True则使用多账号代理
+MULTI_ACCOUNT_PROXY = True # 是否使用多账号代理，默认不使用，True则使用多账号代理
 NOTIFY = os.getenv("LY_NOTIFY") or False # 是否推送日志，默认不推送，True则推送
 # 504 来财包 505 福禄包 506 转运包 507 美力包 508 普通包 509 锦鲤包
 BAOZI_INFO = {
@@ -65,6 +67,7 @@ class AutoTask:
         self.token = ""
         self.user_id = ""
         self.mobile = ""
+        self.device_id = self.get_random_device_id()
         self.lottery_count = 0
         self.activity_key = ""
         self.activity_type = ""
@@ -94,6 +97,22 @@ class AutoTask:
         elif level == "warning":
             logging.warning(msg)
         self.log_msgs.append(msg)
+    
+    def get_random_device_id(self):
+        """
+        获取随机设备id
+        :return: 设备id
+        """
+        base_id = "BOfYnPsxs/of426K5rN9PfcWW4XoIzJvrguoNGX3viThgcV/6MXraPhzImAwmpH2J5pidmvpqiJNVqdY+OL1Q8w=="
+        # 只替换字母和数字，保留其它符号
+        chars = string.ascii_letters + string.digits
+        new_id = ""
+        for c in base_id:
+            if c.isalnum():
+                new_id += random.choice(chars)
+            else:
+                new_id += c
+        return new_id
 
     def get_proxy(self):
         """
@@ -117,8 +136,9 @@ class AutoTask:
         :return: 是否可用
         """
         try:
-            url = f"https://{self.host}/restapi/activity/activityAction"
-            response = session.post(url, timeout=5)
+            url = f"https://{self.host}/restapi/market/banner"
+            payload = {"pageName":"mine","pageMineAB":"C"}
+            response = session.post(url, json=payload, timeout=5)
             if response.status_code == 200:
                 self.log(f"[检查代理] {proxy} 应该可用")
                 return True
@@ -272,7 +292,7 @@ class AutoTask:
                 "encrypted": "",
                 "iv": "",
                 "jsCode": code,
-                "deviceId": "BhXxwPhRVT63fDue5rxbIaXl+1VIO9LeCb+Psi3aXYV4KBOCLaMmKFEQ7E8x0xPbAk420Kx+SZJj4VUcMREcDVQ==",
+                "deviceId": self.device_id,
                 "rid": "",
                 "quickLoginOptionToken": "3784e624846b04e5e2f0344251180ea7:f9b1dc74-6fbb-4599-b1e8-614d503db61b"
             }
@@ -340,7 +360,7 @@ class AutoTask:
             payload = {
                 "activityKey": "2025fivechoujiangchild",
                 "eventType": "registration",
-                "deviceId": "BOfYnPhfg/of426K5rN9PfcWW4XoIzJvrguoNGX3viThgcV/6MXraPhzImAwmpH2J5pidmvpqiJNVqdY+OL1Q8w=="
+                "deviceId": self.device_id
             }
             response = session.post(url, json=payload, timeout=5)
             response_json = response.json()
@@ -369,7 +389,7 @@ class AutoTask:
                 "eventData": "{,\"sign\":\"7f6cca6e4c0a48ec9a043f01cfa23d4f\"}",
                 "sourceId": "",
                 "userId": self.user_id,
-                "deviceId": "BcpcHm6wKOnZiePA/09d1E/P9R4d6NBlAAPE2KtvNyynqBlAy983cUXRpfCEBdPdRnGKPOHOjp22riMZ5qKty4Q==",
+                "deviceId": self.device_id,
                 "rid": ""
             }
             response = session.post(url, json=payload, timeout=5)
@@ -400,7 +420,7 @@ class AutoTask:
             payload = {
                 "activityKey": activity_key,
                 "eventType": "page_browsing",
-                "deviceId": "Bc/Q+cOOjlgNi98azSaepbj4izww6MCtCcUY6mfQ3nNK8bt1SCdo/naBIF2CNtqTo22Tn6RUcBw3c0jTQJwRMPg=="
+                "deviceId": self.device_id
             }
             response = session.post(url, json=payload, timeout=5)
             response_json = response.json()
@@ -427,7 +447,7 @@ class AutoTask:
                 "activityKey": "f791d7686000",
                 "dateTime": datetime.now().strftime("%Y-%m-%d"),
                 "activityType": 48,
-                "deviceId": "BkJQ2sutPsOKIvRwtCh0Em8DE48OuFlpZOILuLu4gl9AVqKOmzpKgdc49lUL6G4U4l9g6oV6j5FRh0mKy+eQunQ==",
+                "deviceId": self.device_id,
                 "rid": ""
             }
             session.headers['UserSystem'] = "h5platform"
@@ -497,7 +517,7 @@ class AutoTask:
                 "activityKey": activity_key,
                 "eventType": "benefit_exchange_bz",
                 "sourceId": "",
-                "deviceId": "Bp0sa4qKianZK/abGpZjYVjB8Bf7+FeOldThQxT+Qz9RcsuHSDB29ig2Z2kJuUBTtdKTfpiRxjuLcvI5oYydaUw==",
+                "deviceId": self.device_id,
                 "rid": "",
                 "extension": extension
             }
@@ -585,7 +605,7 @@ class AutoTask:
             payload = {
                 "activityKey": activity_key,
                 "activityType": activity_type,
-                "deviceId": "BOfYnPhfg/of426K5rN9PfcWW4XoIzJvrguoNGX3viThgcV/6MXraPhzImAwmpH2J5pidmvpqiJNVqdY+OL1Q8w==",
+                "deviceId": self.device_id,
                 "userId": self.user_id,
                 "memberCode": ""
             }
@@ -639,20 +659,8 @@ class AutoTask:
             for index, token in enumerate(self.check_env(), 1):
                 self.log("")
                 self.log(f"------ 【账号{index}】开始执行任务 ------")
-                if MULTI_ACCOUNT_PROXY:
-                    proxy = self.get_proxy()
-                    if proxy:
-                        session = requests.Session()
-                        session.proxies.update({"http": f"http://{proxy}", "https": f"http://{proxy}"})
-                        # 检查代理，不可用重新获取
-                        while not self.check_proxy(proxy, session):
-                            proxy = self.get_proxy()
-                            session.proxies.update({"http": f"http://{proxy}", "https": f"http://{proxy}"})
-                    else:
-                        session = requests.Session()
-                else:
-                    session = requests.Session()
-                    
+                
+                session = requests.Session()
                 headers = {
                     "UserSystem": "H5",
                     "User-Agent": self.user_agent,
@@ -660,6 +668,15 @@ class AutoTask:
                     "Content-Type": "application/json;charset=UTF-8"
                 }
                 session.headers.update(headers)
+
+                if MULTI_ACCOUNT_PROXY and self.proxy_url != "":
+                    proxy = self.get_proxy()
+                    if proxy:
+                        session.proxies.update({"http": f"http://{proxy}", "https": f"http://{proxy}"})
+                        # 检查代理，不可用重新获取
+                        while not self.check_proxy(proxy, session):
+                            proxy = self.get_proxy()
+                            session.proxies.update({"http": f"http://{proxy}", "https": f"http://{proxy}"})
 
                 # # 执行微信授权
                 # code = self.wx_code_auth(wx_id)
