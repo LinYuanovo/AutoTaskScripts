@@ -39,7 +39,7 @@
 | :-------------------------------------------: | :------: | :----------------------------------------------: | :----------: | :----------------------------------------------------------: | :----------------------: |
 |                    回收猿                     |    ✅️     |              签到、抽奖、满余额提现              | hsy_username |          www.52bjy.com 请求url参数中的**username**           |                          |
 |                   银鱼质享                    |    ✅️     |                   看视频、提现                   |     yyzx     |        n05.sentezhenxuan.com域名下**authori-zation**         |                          |
-|                    飞蚂蚁                     |    ✅️     | 签到、步数兑换、奖池投注、奖池签到、获取用户豆子 |     fmy      |        openapp.fmy90.com域名下请求中**authorization**        |                          |
+|       [飞蚂蚁](https://a.c1ns.cn/iJAKu)       |    ✅️     | 签到、步数兑换、奖池投注、奖池签到、获取用户豆子 |     fmy      |        openapp.fmy90.com域名下请求中**authorization**        |        有效期15天        |
 | [康师傅畅饮社-每日C](https://s.c1ns.cn/GekGz) |    ✅️     |                签到、看视频、邀请                | ksf_unionid  |   ksfdailyc-api.teown.com 域名下请求体body中的**unionid**    |                          |
 |   [一汽丰田丰享汇](https://s.c1ns.cn/IukuX)   |    ✅️     |                   签到、查积分                   |   yqftfxh    |       fxh.ftms.com.cn 域名下请求中**Authorization**值        |                          |
 |       [牛油谷](https://s.c1ns.cn/zfe6A)       |    ✅️     |                   签到、查积分                   |  nyg_token   |        app.niuyougu.com.cn 域名下请求中的**token**值         |                          |
@@ -65,6 +65,7 @@
 | [红人库](https://s.c1ns.cn/EO1Zb) | ✅️ | 签到、查积分 | |
 | [社服益寿活动](https://a.c1ns.cn/m6e7K) | ✅️ | 签到、问答、查询信息 | |
 | [老友时光汇](https://a.c1ns.cn/Kuq1I) | ✅️ | 签到、问答、查询信息 | |
+| [飞蚂蚁](https://a.c1ns.cn/iJAKu) | ✅️ | 签到、步数兑换、奖池投注、奖池签到、获取用户豆子 | |
 
 ## 目录说明
 
