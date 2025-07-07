@@ -1,11 +1,13 @@
 """
- 作者： 临渊
- 日期： 2025/6/22
- 小程序：   飞蚂蚁
- 功能： 签到、步数兑换、奖池投注、获取用户豆子
- 变量： fmy='authorization' （openapp.fmy90.com域名下请求中authorization） 多个账号用换行分割 
- 定时： 一天三次
- cron： 10 6-8 * * *
+ 作者:  临渊
+ 日期:  2025/6/22
+ 小程序:  飞蚂蚁 (https://a.c1ns.cn/iJAKu)
+ 功能:  签到、步数兑换、奖池投注、获取用户豆子
+ 变量:  soy_wxid_data (微信id) 多个账号用换行分割 
+        soy_codetoken_data (微信授权token)
+        soy_codeurl_data (微信授权url)
+ 定时:  一天三次
+ cron:  10 6-8 * * *
  更新日志：
  2025/7/7  V1.0 初始化code版
 """
