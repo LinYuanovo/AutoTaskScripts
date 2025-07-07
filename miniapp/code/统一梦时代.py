@@ -11,6 +11,7 @@
  cron:  10 8,9 * * *
  更新日志：
  2025/6/27 V1.0 初始化脚本
+ 2025/7/7  V1.1 适配更多协议
 """
 
 MULTI_ACCOUNT_SPLIT = ["\n", "@"] # 分隔符列表
@@ -148,6 +149,17 @@ class AutoTask:
             self.log(f"[检查环境变量] 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
             raise
 
+    def dict_keys_to_lower(self, obj):
+        """
+        递归将字典的所有键名转为小写
+        """
+        if isinstance(obj, dict):
+            return {k.lower(): self.dict_keys_to_lower(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [self.dict_keys_to_lower(i) for i in obj]
+        else:
+            return obj
+    
     def wx_code_auth(self, wx_id):
         """
         微信授权取code
@@ -166,12 +178,15 @@ class AutoTask:
             }
             response = requests.post(url, headers=headers, json=payload, timeout=5)
             response.raise_for_status()
-            response_json = response.json()
-            if response_json['code'] == 200:
-                code = response_json['data']['code']
+            # 将所有键名转为小写
+            response_json = self.dict_keys_to_lower(response.json())
+            # 直接取授权code，不判断返回码code
+            code_value = response_json.get('data', {}).get('code', '')
+            if code_value:
+                code = code_value
                 return code
             else:
-                self.log(f"[微信授权]{response_json['msg']}", level="error")
+                self.log(f"[微信授权] 失败，错误信息: {response_json['message']}", level="error")
                 return False
         except requests.RequestException as e:
             self.log(f"[微信授权]发生网络错误: {str(e)}\n{traceback.format_exc()}", level="error")
