@@ -10,13 +10,10 @@
  定时:  一天两次
  cron:  10 11,12 * * *
  更新日志：
- 2025/7/5 V1.0 初始化脚本
- 2025/7/7 V1.1 适配更多协议
+ 2025/7/5   V1.0    初始化脚本
+ 2025/7/7   V1.1    适配更多协议
+ 2025/7/10  V1.2    修复签到及问答无效
 """
-
-MULTI_ACCOUNT_SPLIT = ["\n", "@"] # 分隔符列表
-MULTI_ACCOUNT_PROXY = False # 是否使用多账号代理，默认不使用，True则使用多账号代理
-NOTIFY = False # 是否推送日志，默认不推送，True则推送
 
 import json
 import random
@@ -27,19 +24,12 @@ import logging
 import traceback
 import ssl
 from datetime import datetime
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad
 
-class TLSAdapter(requests.adapters.HTTPAdapter):
-    """
-    自定义TLS
-    解决unsafe legacy renegotiation disabled
-    貌似python太高版本依然会报错
-    """
-    def init_poolmanager(self, *args, **kwargs):
-        ctx = ssl.create_default_context()
-        ctx.set_ciphers("DEFAULT@SECLEVEL=1")
-        ctx.options |= 0x4   # <-- the key part here, OP_LEGACY_SERVER_CONNECT
-        kwargs["ssl_context"] = ctx
-        return super(TLSAdapter, self).init_poolmanager(*args, **kwargs)
+MULTI_ACCOUNT_SPLIT = ["\n", "@"] # 分隔符列表
+MULTI_ACCOUNT_PROXY = False # 是否使用多账号代理，默认不使用，True则使用多账号代理
+NOTIFY = os.getenv("LY_NOTIFY") or False # 是否推送日志，默认不推送，True则推送
 
 class AutoTask:
     def __init__(self, script_name):
@@ -222,6 +212,26 @@ class AutoTask:
         except Exception as e:
             self.log(f"[登录] 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
             return False
+        
+    def get_device_id(self, now, oldt):
+        """
+        生成AES加密字符串
+        :param now: 当前时间戳（毫秒）
+        :param oldt: 旧时间戳（毫秒），可选
+        :return: 加密后的十六进制字符串
+        """
+        c = int((now - oldt) / 1000) if oldt else 0
+        deviceIdObj = {
+            "code": "adsadada",
+            "t": int(now / 1000),
+            "c": c
+        }
+        key = b"ABEDSF.gkJHY.IuXCvQpn!a="
+        iv = b"abcdef1234567890"
+        data = json.dumps(deviceIdObj).encode('utf-8')
+        cipher = AES.new(key, AES.MODE_CBC, iv)
+        encrypted = cipher.encrypt(pad(data, AES.block_size))
+        return encrypted.hex()
 
     def sign_in(self, session):
         """
@@ -231,6 +241,10 @@ class AutoTask:
         """
         try:
             url = f"https://{self.host}/api/userSign"
+            old_timestamp = int(time.time() * 1000 - 30000)
+            device_id = self.get_device_id(old_timestamp, int(time.time() * 1000))
+            session.headers['deviceId'] = device_id
+            session.headers['code'] = 'adsadada'
             response = session.post(url, timeout=5)
             response_json = response.json()
             if int(response_json['code']) == 0:
@@ -333,6 +347,10 @@ class AutoTask:
                 "id": exam_activity_id,
                 "examId": exam_id
             }
+            old_timestamp = int(time.time() * 1000 - 30000)
+            device_id = self.get_device_id(old_timestamp, int(time.time() * 1000))
+            session.headers['deviceId'] = device_id
+            session.headers['code'] = 'adsadada'
             response = session.post(url, json=payload, timeout=5)
             response_json = response.json()
             if int(response_json['code']) == 0:
