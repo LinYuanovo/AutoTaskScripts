@@ -7,10 +7,11 @@
  定时:  一天两次
  cron:  10 8,9 * * *
  更新日志：
- 2025/7/2 V1.0 初始化脚本
- 2025/7/3 V1.1 增加小游戏签到、浏览、抽奖、做包子
- 2025/7/7 V1.2 通知可以设置环境变量LY_NOTIFY
- 2025/7/8 V1.3 尝试修复火爆问题
+ 2025/7/2   V1.0    初始化脚本
+ 2025/7/3   V1.1    增加小游戏签到、浏览、抽奖、做包子
+ 2025/7/7   V1.2    通知可以设置环境变量LY_NOTIFY
+ 2025/7/8   V1.3    尝试修复火爆问题
+ 2025/7/19  V1.4    去除抽奖、增加一个浏览
 """
 
 import json
@@ -412,7 +413,7 @@ class AutoTask:
         """
         小游戏浏览
         :param session: session
-        :param activity_key: 活动key 115c73bf71000 1153198a86000
+        :param activity_key: 活动key 115c73bf71000 1153198a86000 20ad059a31000
         :return: 浏览结果
         """
         try:
@@ -693,10 +694,10 @@ class AutoTask:
                     # 获取抽奖信息
                     if self.get_lottery_info(session, "463"):
                         time.sleep(random.randint(3, 6))
-                        # 抽奖
-                        for i in range(self.lottery_count):
-                            self.lottery(session, self.activity_key, self.activity_type)
-                            time.sleep(random.randint(3, 6))
+                        # # 抽奖
+                        # for i in range(self.lottery_count):
+                        #     self.lottery(session, self.activity_key, self.activity_type)
+                        #     time.sleep(random.randint(3, 6))
                     # 获取用户福利点
                     self.get_user_welfare(session)
                     time.sleep(random.randint(3, 6))
@@ -710,13 +711,15 @@ class AutoTask:
                     time.sleep(random.randint(3, 6))
                     self.mini_game_brose(session, "1153198a86000")
                     time.sleep(random.randint(3, 6))
+                    self.mini_game_brose(session, "20ad059a31000")
+                    time.sleep(random.randint(3, 6))
                     # 获取小游戏飞行棋信息
                     if self.get_lottery_info(session, "510"):
                         time.sleep(random.randint(3, 6))
                         # 小游戏飞行棋抽奖
-                        for i in range(self.get_mini_game_lottery_info(session)):
-                            self.lottery(session, self.activity_key, self.activity_type)
-                            time.sleep(random.randint(3, 6))
+                        # for i in range(self.get_mini_game_lottery_info(session)):
+                        #     self.lottery(session, self.activity_key, self.activity_type)
+                        #     time.sleep(random.randint(3, 6))
                     # 获取小游戏包子皮数量
                     if self.get_lottery_info(session, "411"):
                         time.sleep(random.randint(3, 6))
@@ -734,10 +737,10 @@ class AutoTask:
                                         # 查询该包子的信息
                                         if self.get_lottery_info(session, baozi_id):
                                             time.sleep(random.randint(3, 6))
-                                            # 抽奖
-                                            for i in range(self.game_user_fragment_count):
-                                                self.lottery(session, self.activity_key, self.activity_type)
-                                                time.sleep(random.randint(3, 6))
+                                            # # 抽奖
+                                            # for i in range(self.game_user_fragment_count):
+                                            #     self.lottery(session, self.activity_key, self.activity_type)
+                                            #     time.sleep(random.randint(3, 6))
                         else:
                             self.log(f"[{self.nickname}] 小游戏包子皮数量不足，不检测是否能做任意包子")
                     # 查询小游戏包子数
