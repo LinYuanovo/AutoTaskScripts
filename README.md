@@ -18,18 +18,24 @@
 
 - 养鸡场
   
-  http://xxxx/prod-api/wechat/api/getMiniProgramCode
+  soy_codeurl_data: http://xxxx/prod-api/wechat/api/getMiniProgramCode
   
-- [NoNull佬]([wool/wechat/readme.md at master · wyourname/wool](https://github.com/wyourname/wool/blob/master/wechat/readme.md))
+  soy_codetoken_data: **Authorization**
+  
+- [NoNull佬](https://github.com/wyourname/wool/blob/master/wechat/readme.md)
 
-  http://xxxx/wx/app/code
+  soy_codeurl_data: http://xxxx/wx/app/code
 
 - [WeChatPadPro](https://github.com/WeChatPadPro/WeChatPadPro)
   
-  http://xxxx/admin/GetAllDevices
+  soy_codeurl_data: http://xxxx/admin/GetAllDevices
+  
+  soy_codetoken_data: **ADMIN_KEY**
   
 - [iwechat](https://github.com/iwechatcom/iwechat) 应该支持，没有测试账号
-  http://xxxx/admin/GetAuthKey
+  soy_codeurl_data: http://xxxx/admin/GetAuthKey
+  
+  soy_codetoken_data: **key**
 
 通过api取对应wxid的code，如图
 
