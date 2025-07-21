@@ -9,6 +9,7 @@
  更新日志：
  2025/7/5   V1.0    初始化脚本
  2025/7/10  V1.1    修复签到及问答无效
+ 2025/7/21  V1.2    修复签到及问答无效
 """
 
 import json
@@ -18,7 +19,8 @@ import requests
 import os
 import logging
 import traceback
-import ssl
+import random
+import string
 from datetime import datetime
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
@@ -195,25 +197,36 @@ class AutoTask:
             self.log(f"[登录] 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
             return False
         
-    def get_device_id(self, now, oldt):
+    def generate_random_code(self):
+        """
+        生成随机字符串
+        :return: 随机字符串
+        """
+        chars = string.ascii_lowercase + string.digits
+        return ''.join(random.choice(chars) for _ in range(13))
+        
+    def get_device_id(self, ad_start_time, last_answer_time, random_code):
         """
         生成AES加密字符串
-        :param now: 当前时间戳（毫秒）
-        :param oldt: 旧时间戳（毫秒），可选
+        :param ad_start_time: 广告开始时间戳（毫秒）
+        :param last_answer_time: 上次答题时间戳（毫秒）
+        :param random_code: 随机码
         :return: 加密后的十六进制字符串
         """
-        c = int((now - oldt) / 1000) if oldt else 0
-        deviceIdObj = {
-            "code": "adsadada",
-            "t": int(now / 1000),
-            "c": c
+        
+        # 加密对象
+        device_id_obj = {
+            "code": random_code,
+            "t": int(ad_start_time / 1000),
+            "c": int((ad_start_time - last_answer_time) / 1000) if last_answer_time else 0
         }
-        key = b"ABEDSF.gkJHY.IuXCvQpn!a="
-        iv = b"abcdef1234567890"
-        data = json.dumps(deviceIdObj).encode('utf-8')
+        key = "Kj8mN2pQ9rS5tU7vW3xY1zA4bC6dE8fG".encode('utf-8')
+        iv = "H7nM4kL9pQ2rS5tU".encode('utf-8')
+        data = json.dumps(device_id_obj).encode('utf-8')
         cipher = AES.new(key, AES.MODE_CBC, iv)
         encrypted = cipher.encrypt(pad(data, AES.block_size))
-        return encrypted.hex()
+        
+        return encrypted.hex(), random_code
 
     def sign_in(self, session):
         """
@@ -223,10 +236,12 @@ class AutoTask:
         """
         try:
             url = f"https://{self.host}/api/userSign"
-            old_timestamp = int(time.time() * 1000 - 30000)
-            device_id = self.get_device_id(old_timestamp, int(time.time() * 1000))
+            ad_start_time = int(time.time() * 1000)
+            ad_end_time = int(time.time() * 1000 + 30000)
+            random_code = "adsadada"
+            device_id, random_code = self.get_device_id(ad_start_time, ad_end_time, random_code)
             session.headers['deviceId'] = device_id
-            session.headers['code'] = 'adsadada'
+            session.headers['code'] = random_code
             response = session.post(url, timeout=5)
             response_json = response.json()
             if int(response_json['code']) == 0:
@@ -329,10 +344,12 @@ class AutoTask:
                 "id": exam_activity_id,
                 "examId": exam_id
             }
-            old_timestamp = int(time.time() * 1000 - 30000)
-            device_id = self.get_device_id(old_timestamp, int(time.time() * 1000))
+            ad_start_time = int(time.time() * 1000)
+            ad_end_time = int(time.time() * 1000 + 30000)
+            random_code = self.generate_random_code() + self.generate_random_code()
+            device_id, random_code = self.get_device_id(ad_start_time, ad_end_time, random_code)
             session.headers['deviceId'] = device_id
-            session.headers['code'] = 'adsadada'
+            session.headers['code'] = random_code
             response = session.post(url, json=payload, timeout=5)
             response_json = response.json()
             if int(response_json['code']) == 0:
