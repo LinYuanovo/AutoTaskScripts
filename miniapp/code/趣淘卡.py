@@ -1,7 +1,7 @@
 """
  作者:  临渊
  日期:  2025/6/30
- 小程序:  趣淘卡 (https://s.c1ns.cn/zfe6A)
+ 小程序:  趣淘卡 (https://a.c1ns.cn/dpukh)
  功能:  签到、查积分
  变量:  soy_wxid_data (微信id) 多个账号用换行分割 
         soy_codetoken_data (微信授权token)
