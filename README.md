@@ -33,6 +33,7 @@
   soy_codetoken_data: **ADMIN_KEY**
   
 - [iwechat](https://github.com/iwechatcom/iwechat) 应该支持，没有测试账号
+  
   soy_codeurl_data: http://xxxx/admin/GetAuthKey
   
   soy_codetoken_data: **key**
