@@ -11,8 +11,19 @@
 |   PROXY_API_URL    |          代理api，返回一条txt文本内容为代理ip:端口           |    [示例注册地址](https://www.ipzan.com?pid=s20qm4fr8)    |
 |     LY_NOTIFY      |       是否推送通知，填True则推送，不设置该变量则不推送       |                   可选，脚本默认不推送                    |
 |  soy_codeurl_data  | 微信授权协议获取code的url，示例 http://xxxx/prod-api/wechat/api/getMiniProgramCode |                      code版脚本必须                       |
-| soy_codetoken_data |        上述变量对应的鉴权token，如协议不需要没有为空         |                      code版脚本必须                       |
+| soy_codetoken_data |   上述变量对应的鉴权token或ADMIN_KEY，如协议不需要没有为空   |                      code版脚本必须                       |
 |   soy_wxid_data    | 微信授权获取code的wxid，示例 wxid_xxxxxxxxx522，通过wxid取出对应的code |                      code版脚本必须                       |
+
+### 支持协议
+
+- 养鸡场
+  http://xxxx/prod-api/wechat/api/getMiniProgramCode
+- [NoNull佬]([wool/wechat/readme.md at master · wyourname/wool](https://github.com/wyourname/wool/blob/master/wechat/readme.md))
+  http://xxxx/wx/app/code
+- [WeChatPadPro](https://github.com/WeChatPadPro/WeChatPadPro)
+  http://xxxx/admin/GetAllDevices
+- [iwechat](https://github.com/iwechatcom/iwechat) 应该支持，没有测试账号
+  http://xxxx/admin/GetAuthKey
 
 通过api取对应wxid的code，如图
 
@@ -46,6 +57,7 @@
 |    [社服益寿活动](https://a.c1ns.cn/m6e7K)    |    ✅️     |               签到、问答、查询信息               |  sfys_token  |     ylapi.luckystarpay.com 域名请求中**x-token**值      |                 每日秒到0.1，貌似会黑                  |
 |     [老友时光汇](https://a.c1ns.cn/Kuq1I)     |    ✅️     |               签到、问答、查询信息               | lysgh_token  |      api.zijinzhaoyao.com 域名请求中**x-token**值       |                          同上                          |
 |      [中免日上](https://a.c1ns.cn/qbFEB)      |    ⚠️     |            签到、查积分、金包子小游戏            |  zmrs_token  |      api.cdfsunrise.com 请求中的**Accesstoken**值       | 有效期挺长，应该是三个月<br />抽奖已失效，加了阿里滑块 |
+|    [快集合](https://wxaurl.cn/UOdOAJrVwan)    |    ✅️     |              签到、看广告、查询积分              |  kjh_openid  |      app/Exp/wxappLogin2 登录请求中的**open_id**值      |                         不过期                         |
 
 ## code版小程序
 
@@ -67,6 +79,8 @@
 | [老友时光汇](https://a.c1ns.cn/Kuq1I) | ✅️ | 签到、问答、查询信息 | |
 | [飞蚂蚁](https://a.c1ns.cn/iJAKu) | ✅️ | 签到、步数兑换、奖池投注、奖池签到、获取用户豆子 | |
 | [好人家美味生活馆](https://a.c1ns.cn/Pru42) | ✅️ | 签到、查询积分 | |
+| [趣淘卡](https://a.c1ns.cn/dpukh) | ✅️ | 签到、查积分 | |
+| [快集合](https://wxaurl.cn/UOdOAJrVwan) | ✅️ | 签到、看广告、查询积分 | |
 
 ## 目录说明
 
