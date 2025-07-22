@@ -11,6 +11,7 @@
  cron:  10 11,12 * * *
  更新日志：
  2025/7/21  V1.0   初始化脚本
+ 2025/7/22  V1.1    修改协议适配器导入方式
 """
 
 import json
@@ -18,6 +19,7 @@ import random
 import time
 import requests
 import os
+import sys
 import logging
 import traceback
 import ssl
@@ -27,278 +29,26 @@ MULTI_ACCOUNT_SPLIT = ["\n", "@"] # 分隔符列表
 MULTI_ACCOUNT_PROXY = False # 是否使用多账号代理，默认不使用，True则使用多账号代理
 NOTIFY = os.getenv("LY_NOTIFY") or False # 是否推送日志，默认不推送，True则推送
 
-class WechatCodeAdapter:
-    def __init__(self):
-        """
-        初始化微信授权适配器
-        """
-        self.wx_code_url = os.getenv("soy_codeurl_data")
-        self.wx_code_token = os.getenv("soy_codetoken_data")
-        self.wx_appid = "wx02092e8c44221583" # 微信小程序id
-        self.log_msgs = []  # 日志收集
-        self.setup_logging()
-
-    def setup_logging(self):
-        """
-        配置日志系统
-        """
-        logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s - %(levelname)s\t- %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S',
-            handlers=[
-                # logging.FileHandler(f'{self.script_name}_{datetime.now().strftime("%Y%m%d")}.log', encoding='utf-8'),  # 保存日志
-                logging.StreamHandler()
-            ]
-        )
-
-    def log(self, msg, level="info"):
-        if level == "info":
-            logging.info(msg)
-        elif level == "error":
-            logging.error(msg)
-        elif level == "warning":
-            logging.warning(msg)
-        self.log_msgs.append(msg)
-
-    def get_protocol_type(self):
-        """
-        获取协议类型
-        :return: 协议类型
-        """
-        end_url = self.wx_code_url.split("/")[-1]
-        if end_url == "getMiniProgramCode":
-            # 养鸡场
-            return 1
-        elif end_url == "code":
-            # 牛子
-            return 2
-        elif end_url == "GetAllDevices":
-            # WeChatPadPro
-            return 3
-        elif end_url == "GetAuthKey":
-            # iwechat
-            return 4
-        else:
-            # 其他不知道的协议
-            return 0
-        
-    def dict_keys_to_lower(self, obj):
-        """
-        递归将字典的所有键名转为小写
-        """
-        if isinstance(obj, dict):
-            return {k.lower(): self.dict_keys_to_lower(v) for k, v in obj.items()}
-        elif isinstance(obj, list):
-            return [self.dict_keys_to_lower(i) for i in obj]
-        else:
-            return obj
-        
-    def get_code_1(self, wx_id):
-        """
-        养鸡场 获取code
-        :param wx_id: 微信id
-        :return: code
-        """
-        try:
-            url = self.wx_code_url
-            headers = {
-                "Authorization": self.wx_code_token,
-                "Content-Type": "application/json"
-            }
-            payload = {"wxid": wx_id, "appid": self.wx_appid}
-            response = requests.post(url, headers=headers, json=payload, timeout=5)
-            response.raise_for_status()
-            # 将所有键名转为小写
-            response_json = self.dict_keys_to_lower(response.json())
-            # 直接取授权code，不判断返回码code
-            code_value = response_json.get('data', {}).get('code', '')
-            if code_value:
-                code = code_value
-                return code
-            else:
-                self.log(f"[微信授权] 失败，错误信息: {response_json['message']}", level="error")
-                return False
-        except requests.RequestException as e:
-            self.log(f"[微信授权]发生网络错误: {str(e)}\n{traceback.format_exc()}", level="error")
-            return False
-        except Exception as e:
-            self.log(f"[微信授权]发生未知错误: {str(e)}\n{traceback.format_exc()}", level="error")
-            return False
-    
-    def get_code_2(self, wx_id):
-        """
-        牛子 获取code
-        :param wx_id: 微信id
-        :return: code
-        """
-        try:
-            url = self.wx_code_url
-            headers = {
-                "Content-Type": "application/json"
-            }
-            payload = {"wxid": wx_id, "appid": self.wx_appid}
-            response = requests.post(url, headers=headers, json=payload, timeout=5)
-            response.raise_for_status()
-            # 将所有键名转为小写
-            response_json = self.dict_keys_to_lower(response.json())
-            # 直接取授权code，不判断返回码code
-            code_value = response_json.get('data', {}).get('code', '')
-            if code_value:
-                code = code_value
-                return code
-            else:
-                self.log(f"[微信授权] 失败，错误信息: {response_json['message']}", level="error")
-                return False
-        except requests.RequestException as e:
-            self.log(f"[微信授权]发生网络错误: {str(e)}\n{traceback.format_exc()}", level="error")
-            return False
-        except Exception as e:
-            self.log(f"[微信授权]发生未知错误: {str(e)}\n{traceback.format_exc()}", level="error")
-            return False
-        
-    def get_all_devices(self):
-        """
-        WeChatPadPro 获取账号授权码列表
-        :return: 账号授权码列表
-        """
-        try:
-            url = self.wx_code_url
-            params = {
-                "key": self.wx_code_token
-            }
-            response = requests.get(url, params=params, timeout=5)
-            response.raise_for_status()
-            response_json = response.json()
-            if response_json.get('Code') == 200:
-                all_devices = response_json.get('Data', {}).get('devices', [])
-                if all_devices:
-                    return all_devices
-                else:
-                    self.log(f"[获取账号授权码列表] 返回信息: {response_json['Text']}", level="error")
-                    return []
-            else:
-                self.log(f"[获取账号授权码列表] 失败，错误信息: {response_json['Text']}", level="error")
-                return []
-        except Exception as e:
-            self.log(f"[获取账号授权码列表] 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
-            return []
-        
-    def get_target_key_by_wxid(self, all_keys, wx_id):
-        """
-        获取指定微信id的授权码
-        :param all_keys: 所有账号授权码列表
-        :param wx_id: 微信id
-        :return: 指定微信id的授权码
-        """
-        for key in all_keys:
-            _wx_id = key.get('deviceId') or key.get('wx_id')
-            if _wx_id == wx_id:
-                return key.get('authKey') or key.get('license')
-        return None
-    
-    def get_code_3(self, wx_id):
-        """
-        WeChatPadPro 获取code
-        :param wx_id: 微信id
-        :return: code
-        """
-        try:
-            all_devices = self.get_all_devices()
-            target_key = self.get_target_key_by_wxid(all_devices, wx_id)
-            url = self.wx_code_url.split("/admin")[0] + "/applet/JsLogin"
-            params = {
-                "key": target_key
-            }
-            payload = {
-                "AppId": self.wx_appid,
-                "Data": "",
-                "Opt": 1,
-                "PackageName": "",
-                "SdkName": ""
-            }
-            response = requests.post(url, params=params, json=payload, timeout=5)
-            response.raise_for_status()
-            response_json = response.json()
-            if response_json.get('Code') == 200:
-                # self.log(f"[获取code] 成功，code: {response_json.get('Data', {}).get('Code', '')}")
-                return response_json.get('Data', {}).get('Code', '')
-            else:
-                self.log(f"[获取code] 失败，错误信息: {response_json['Text']}", level="error")
-                return False
-        except Exception as e:
-            self.log(f"[获取code] 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
-            return False
-        
-    def get_auth_keys(self, wx_id):
-        """
-        iwechat 获取账号授权码列表
-        :return: 账号授权码列表
-        """
-        try:
-            url = self.wx_code_url
-            params = {
-                "key": self.wx_code_token
-            }
-            response = requests.get(url, params=params, timeout=5)
-            response.raise_for_status()
-            response_json = response.json()
-            return response_json
-        except Exception as e:
-            self.log(f"[获取code] 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
-            return False
-        
-    def get_code_4(self, wx_id):
-        """
-        iwechat 获取code
-        :param wx_id: 微信id
-        :return: code
-        """
-        try:
-            auth_keys = self.get_auth_keys()
-            target_key = self.get_target_key_by_wxid(auth_keys, wx_id)
-            url = self.wx_code_url.split("/admin")[0] + "/applet/JsLogin"
-            params = {
-                "key": target_key
-            }
-            payload = {
-                "AppId": self.wx_appid,
-                "Data": "",
-                "Opt": 1,
-                "PackageName": "",
-                "SdkName": ""
-            }
-            response = requests.post(url, params=params, json=payload, timeout=5)
-            response.raise_for_status()
-            response_json = response.json()
-            if response_json.get('Code') == 200:
-                self.log(f"[获取code] 成功，code: {response_json.get('Data', {}).get('Code', '')}")
-                return response_json.get('Data', {}).get('Code', '')
-            else:
-                self.log(f"[获取code] 失败，错误信息: {response_json['Text']}", level="error")
-                return False
-        except Exception as e:
-            self.log(f"[获取code] 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
-            return False
-        
-    def get_code(self, wx_id):
-        """
-        获取code
-        :param wx_id: 微信id
-        :return: 指定wxid的code
-        """
-        protocol_type = self.get_protocol_type()
-        if protocol_type == 1:
-            return self.get_code_1(wx_id)
-        elif protocol_type == 2:
-            return self.get_code_2(wx_id)
-        elif protocol_type == 3:
-            return self.get_code_3(wx_id)
-        elif protocol_type == 4:
-            return self.get_code_4(wx_id)
-        else:
-            self.log(f"[获取code] 发生错误: 未知协议类型", level="error")
-            return False
+# 导入微信协议适配器
+if "miniapp" not in os.path.abspath(__file__): # 单独脚本，非拉库
+    wechat_adapter_path = ("wechatCodeAdapter.py")
+else:
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../utils')))
+    wechat_adapter_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../utils/wechatCodeAdapter.py'))
+if not os.path.exists(wechat_adapter_path):
+    try:
+        url = "https://raw.githubusercontent.com/LinYuanovo/AutoTaskScripts/refs/heads/main/utils/wechatCodeAdapter.py"
+        response = requests.get(url, timeout=15)
+        response.raise_for_status()
+        with open(wechat_adapter_path, "w", encoding="utf-8") as f:
+            f.write(response.text)
+    except requests.RequestException as e:
+        print(f"下载微信协议适配器文件失败（网络问题），自行复制一份")
+        exit(1)
+    except Exception as e:
+        print(f"下载微信协议适配器文件失败（其他错误）：{e}")
+        exit(1)
+from wechatCodeAdapter import WechatCodeAdapter # type: ignore
 
 class TLSAdapter(requests.adapters.HTTPAdapter):
     """
@@ -321,7 +71,8 @@ class AutoTask:
         """
         self.script_name = script_name
         self.proxy_url = os.getenv("PROXY_API_URL") # 代理api，返回一条txt文本，内容为代理ip:端口
-        self.wechat_code_adapter = WechatCodeAdapter()
+        self.wx_appid = "wx02092e8c44221583" # 微信小程序id
+        self.wechat_code_adapter = WechatCodeAdapter(self.wx_appid)
         self.host = "exp2.jintaocms.top"
         self.nickname = ""
         self.user_id = ""
