@@ -8,6 +8,7 @@
  cron:  10 8,12,16,20 * * *
  更新日志：
  2025/7/22  V1.0    初始化脚本
+ 2025/7/23  V1.1    修复报错，去除引入微信协议适配器
 """
 
 import json
@@ -24,27 +25,6 @@ import sys
 MULTI_ACCOUNT_SPLIT = ["\n", "@"] # 分隔符列表
 MULTI_ACCOUNT_PROXY = False # 是否使用多账号代理，默认不使用，True则使用多账号代理
 NOTIFY = os.getenv("LY_NOTIFY") or False # 是否推送日志，默认不推送，True则推送
-
-# 导入微信协议适配器
-if "app" not in os.path.abspath(__file__): # 单独脚本，非拉库
-    wechat_adapter_path = ("wechatCodeAdapter.py")
-else:
-    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../utils')))
-    wechat_adapter_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../utils/wechatCodeAdapter.py'))
-if not os.path.exists(wechat_adapter_path):
-    try:
-        url = "https://raw.githubusercontent.com/LinYuanovo/AutoTaskScripts/refs/heads/main/utils/wechatCodeAdapter.py"
-        response = requests.get(url, timeout=15)
-        response.raise_for_status()
-        with open(wechat_adapter_path, "w", encoding="utf-8") as f:
-            f.write(response.text)
-    except requests.RequestException as e:
-        print(f"下载微信协议适配器文件失败（网络问题），自行复制一份")
-        exit(1)
-    except Exception as e:
-        print(f"下载微信协议适配器文件失败（其他错误）：{e}")
-        exit(1)
-from wechatCodeAdapter import WechatCodeAdapter # type: ignore
 
 class TLSAdapter(requests.adapters.HTTPAdapter):
     """
@@ -65,17 +45,38 @@ class AutoTask:
         初始化自动任务类
         :param script_name: 脚本名称，用于日志显示
         """
+        self.log_msgs = []  # 日志收集
         self.script_name = script_name
         self.proxy_url = os.getenv("PROXY_API_URL") # 代理api，返回一条txt文本，内容为代理ip:端口
         self.wx_appid = "wx49133dd26d6fc20b" # 微信小程序id
-        self.wechat_code_adapter = WechatCodeAdapter(self.wx_appid)
         self.host = "shareactivity.chongpangpang.com"
         self.user_id = ""
         self.nickname = ""
         self.user_agent = "Mozilla/5.0 (Linux; Android 12; M2012K11AC Build/SKQ1.220303.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/134.0.6998.136 Mobile Safari/537.36 XWEB/1340129 MMWEBSDK/20240301 MMWEBID/9871 MicroMessenger/8.0.48.2580(0x28003036) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64 MiniProgramEnv/android"
+        self.setup_logging()
         
+    def setup_logging(self):
+        """
+        配置日志系统
+        """
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(levelname)s\t- %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S',
+            handlers=[
+                # logging.FileHandler(f'{self.script_name}_{datetime.now().strftime("%Y%m%d")}.log', encoding='utf-8'),  # 保存日志
+                logging.StreamHandler()
+            ]
+        )
+
     def log(self, msg, level="info"):
-        self.wechat_code_adapter.log(msg, level)
+        if level == "info":
+            logging.info(msg)
+        elif level == "error":
+            logging.error(msg)
+        elif level == "warning":
+            logging.warning(msg)
+        self.log_msgs.append(msg)
 
     def dict_keys_to_lower(self, obj):
         """
@@ -321,7 +322,7 @@ class AutoTask:
         """
         try:
             url = f"https://{self.host}/api-cpp-gw/cpp-user-score-management/v1/user-score/checkin"
-            response = session.post(url, timeout=10)
+            response = session.post(url, timeout=15)
             response_json = response.json()
             score = response_json.get('scores', '')
             if score:
@@ -538,6 +539,8 @@ class AutoTask:
                         self.log(f"[{self.nickname}] 当前积分余额: {score}积分")
                     
                 self.log(f"------ 【账号{index}】执行任务完成 ------")
+                # 清理session
+                session.close()
             # # 保存新账号信息
             # if account_info_list:
             #     self.save_account_info(account_info_list)
@@ -557,7 +560,7 @@ class AutoTask:
                 # 任务结束后推送日志
                 title = f"{self.script_name} 运行日志"
                 header = "作者：临渊\n"
-                content = header + "\n" +"\n".join(self.wechat_code_adapter.log_msgs)
+                content = header + "\n" +"\n".join(self.log_msgs)
                 notify.send(title, content)
 
 
