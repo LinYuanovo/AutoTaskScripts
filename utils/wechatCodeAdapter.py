@@ -47,7 +47,10 @@ class WechatCodeAdapter:
         获取协议类型
         :return: 协议类型
         """
-        end_url = self.wx_code_url.split("/")[-1]
+        if self.wx_code_url:
+            end_url = self.wx_code_url.split("/")[-1]
+        else:
+            end_url = ""
         if end_url == "getMiniProgramCode":
             # 养鸡场
             return 1
