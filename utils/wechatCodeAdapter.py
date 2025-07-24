@@ -101,13 +101,10 @@ class WechatCodeAdapter:
             response.raise_for_status()
             # 将所有键名转为小写
             response_json = self.dict_keys_to_lower(response.json())
-            # 直接取授权code，不判断返回码code
-            code_value = response_json.get('data', {}).get('code', '')
-            if code_value:
-                code = code_value
-                return code
+            if response_json['code'] == 200:
+                return response_json['data']['code']
             else:
-                self.log(f"[微信授权] 失败，错误信息: {response_json['message']}", level="error")
+                self.log(f"[微信授权] 失败，错误信息: {response_json.get('msg', '未知错误')}", level="error")
                 return False
         except requests.RequestException as e:
             self.log(f"[微信授权]发生网络错误: {str(e)}\n{traceback.format_exc()}", level="error")
