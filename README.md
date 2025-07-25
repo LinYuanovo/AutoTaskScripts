@@ -97,6 +97,7 @@
 | [趣淘卡](https://a.c1ns.cn/dpukh) | ✅️ | 签到、查积分 | |
 | [快集合](https://wxaurl.cn/UOdOAJrVwan) | ✅️ | 签到、看广告、查询积分 | |
 | [老板服务微商城 ](https://a.c1ns.cn/OIFBt) | ✅️ | 签到、做部分任务、查积分 | |
+| [杰士邦会员中心](https://a.c1ns.cn/K7Cr9) | ✅️ | 签到、查积分 | |
 
 ## 目录说明
 
