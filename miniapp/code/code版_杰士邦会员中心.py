@@ -1,7 +1,8 @@
 """
  作者: 临渊
  日期: 2025/7/25
- name: 杰士邦会员中心 (https://a.c1ns.cn/K7Cr9)
+ name: 杰士邦会员中心
+ 入口: 微信小程序 (https://a.c1ns.cn/K7Cr9)
  功能: 签到、查积分
  变量: soy_wxid_data (微信id) 多个账号用换行分割 
         soy_codetoken_data (微信授权token)
