@@ -8,7 +8,6 @@
         soy_codeurl_data (微信授权url)
         PROXY_API_URL (代理api，返回一条txt文本，内容为代理ip:端口)
  定时:  一天两次
- name:  杰士邦会员中心
  cron:  10 11,12 * * *
  更新日志：
  2025/7/25  V1.0    初始化脚本
