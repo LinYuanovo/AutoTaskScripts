@@ -1,16 +1,19 @@
 """
- 作者:  临渊
- 日期:  2025/7/25
- 小程序:  杰士邦会员中心 (https://a.c1ns.cn/K7Cr9)
- 功能:  签到、查积分
- 变量:  soy_wxid_data (微信id) 多个账号用换行分割 
+作者: 临渊
+日期: 2025/7/25
+name: 杰士邦会员中心
+入口: 微信小程序 (https://a.c1ns.cn/K7Cr9)
+功能: 签到、查积分
+变量: soy_wxid_data (微信id) 多个账号用换行分割 
         soy_codetoken_data (微信授权token)
         soy_codeurl_data (微信授权url)
         PROXY_API_URL (代理api，返回一条txt文本，内容为代理ip:端口)
- 定时:  一天两次
- cron:  10 11,12 * * *
- 更新日志：
- 2025/7/25  V1.0    初始化脚本
+定时: 一天两次
+cron: 10 11,12 * * *
+---------------------------------------------------------------
+更新日志：
+2025/7/25   V1.0    初始化脚本
+2025/7/25   V1.1    去除缓存token
 """
 
 import json
@@ -381,9 +384,6 @@ class AutoTask:
         """
         try:
             self.log(f"【{self.script_name}】开始执行任务")
-            account_info_list = []
-            local_account_info = self.load_account_info()
-            self.log(f"本地共{len(local_account_info)}个账号缓存")
             for index, wx_id in enumerate(self.check_env(), 1):
                 # 清理账号信息
                 self.nickname = ""
@@ -406,53 +406,31 @@ class AutoTask:
                         #     proxy = self.get_proxy()
                         #     session.proxies.update({"http": f"http://{proxy}", "https": f"http://{proxy}"})
 
-                token = None
-                # 查找本地账号
-                if local_account_info:
-                    for info in local_account_info:
-                        if info['wx_id'] == wx_id:
-                            token = info['token']
-                            # self.log(f"[登录] 找到本地token: {token}")
-                            break
-                # 本地没有则授权获取
-                if not token:
-                    code = self.wechat_code_adapter.get_code(wx_id)
-                    if code:
-                        token = self.wxlogin(session, code)
-                        now_account_info = {
-                            "wx_id": wx_id,
-                            "token": token
-                        }
-                        account_info_list.append(now_account_info)
-                else:
-                    self.token = token
-                    session.headers['Authorization'] = token
-                # 获取用户信息
-                if not self.get_user_info(session):
-                    self.remove_account_info(wx_id)
-                    continue
-                # 获取用户活动页面
-                customer_page = json.loads(self.get_customer_page(session))
-                # 获取签到id
-                for item in customer_page['moduleList']:
-                    if item['detail'].get('linkList', []):
-                        for link in item['detail']['linkList']:
-                            if link.get('text') == '签到':
-                                sign_in_id = link['id']
-                                break
-                # 签到
-                self.sign_in(session, sign_in_id)
-                time.sleep(random.randint(3, 5))
-                # 获取用户积分
-                self.get_user_info(session)
-                self.log(f"[{self.nickname}] 当前积分: {self.points}")
-                time.sleep(random.randint(3, 5))
-                self.log(f"------ 【账号{index}】执行任务完成 ------")
+                code = self.wechat_code_adapter.get_code(wx_id)
+                if code:
+                    token = self.wxlogin(session, code)
+                    if token:
+                        # 获取用户信息
+                        if self.get_user_info(session):
+                            # 获取用户活动页面
+                            customer_page = json.loads(self.get_customer_page(session))
+                            # 获取签到id
+                            for item in customer_page['moduleList']:
+                                if item['detail'].get('linkList', []):
+                                    for link in item['detail']['linkList']:
+                                        if link.get('text') == '签到':
+                                            sign_in_id = link['id']
+                                            break
+                            # 签到
+                            self.sign_in(session, sign_in_id)
+                            time.sleep(random.randint(3, 5))
+                            # 获取用户积分
+                            self.get_user_info(session)
+                            self.log(f"[{self.nickname}] 当前积分: {self.points}")
+                            time.sleep(random.randint(3, 5))
+                            self.log(f"------ 【账号{index}】执行任务完成 ------")
                 # 清理session
                 session.close()
-            # 保存新账号信息
-            if account_info_list:
-                self.save_account_info(account_info_list)
         except Exception as e:
             self.log(f"【{self.script_name}】执行过程中发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
         finally:
