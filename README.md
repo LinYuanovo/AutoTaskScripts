@@ -37,6 +37,12 @@
   soy_codeurl_data: http://xxxx/admin/GetAuthKey
   
   soy_codetoken_data: **key**
+  
+- [StarBot Pro](https://apifox.com/apidoc/shared/9652da8e-1f7c-4ef3-861c-2bfd721c395a/doc-5429062)
+  
+  soy_codeurl_data: http://xxxx/api/processor
+  
+  soy_codetoken_data: **回调token**
 
 通过api取对应wxid的code，如图
 

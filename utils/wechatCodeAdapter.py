@@ -63,6 +63,9 @@ class WechatCodeAdapter:
         elif end_url == "GetAuthKey":
             # iwechat
             return 4
+        elif end_url == "processor":
+            # StarBot Pro
+            return 5
         else:
             # 其他不知道的协议
             return 0
@@ -283,6 +286,37 @@ class WechatCodeAdapter:
             self.log(f"[获取code] 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
             return False
         
+    def get_code_5(self, wx_id):
+        """
+        StarBot Pro 获取code
+        :param wx_id: 微信id
+        :return: code
+        """
+        try:
+            url = self.wx_code_url
+            headers = {
+                "Authorization": self.wx_code_token,
+                "Content-Type": "application/json"
+            }
+            payload =  {
+                "type": "querySmallProgramCode",
+                "params": {
+                    "robotId": wx_id,
+                    "appid": self.wx_appid
+                }
+            }
+            response = requests.post(url, headers=headers, json=payload, timeout=5)
+            response.raise_for_status()
+            response_json = response.json()
+            if response_json.get('code') == 200:
+                return response_json.get('data', {}).get('code', '')
+            else:
+                self.log(f"[获取code] 失败，错误信息: {response_json['description']}", level="error")
+                return False
+        except Exception as e:
+            self.log(f"[获取code] 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
+            return False
+        
     def get_code(self, wx_id):
         """
         获取code
@@ -298,6 +332,8 @@ class WechatCodeAdapter:
             return self.get_code_3(wx_id)
         elif protocol_type == 4:
             return self.get_code_4(wx_id)
+        elif protocol_type == 5:
+            return self.get_code_5(wx_id)
         else:
             self.log(f"[获取code] 发生错误: 未知协议类型", level="error")
             return False
