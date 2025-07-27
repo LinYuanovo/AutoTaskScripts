@@ -1,18 +1,20 @@
 """
- 作者：临渊
- 日期：2025/6/8
- 网站：尚香书苑 （https://sxsy19.com/）
- 功能：登录、签到
- 变量：sxsy='邮箱&密码' 或者 'cookie'
-    自动检测，多个账号用换行分割
-    使用邮箱密码将会进行登录（必须有ocr服务地址）
-    使用cookie将会直接使用
- 定时：一天两次
- cron：10 9,10 * * *
- 更新日志：
- 2025/6/8：初始化，完成签到功能
- 2025/6/11：变量增加邮箱密码支持
- 2025/6/17：增加cookie存储功能
+作者: 临渊
+日期: 2025/6/8
+name: 尚香书苑
+入口: 网站 (https://sxsy19.com/)
+功能: 登录、签到
+变量: sxsy='邮箱&密码' 或者 'cookie'
+        自动检测，多个账号用换行分割
+        使用邮箱密码将会进行登录（必须有ocr服务地址）
+        使用cookie将会直接使用
+定时: 一天两次
+cron: 10 9,10 * * *
+------------更新日志------------
+2025/6/8    V1.0    初始化，完成签到功能
+2025/6/11   V1.1    变量增加邮箱密码支持
+2025/6/17   V1.2    增加cookie存储功能
+2025/7/28   V1.3    修改头部注释，以便拉库
 """
 
 DEFAULT_HOST = "sxsy19.com" # 默认域名
@@ -129,7 +131,7 @@ class AutoTask:
             response.raise_for_status()
 
             # 使用正则表达式匹配
-            # formhash 格式：name="formhash" value="5448b1bc"
+            # formhash 格式: name="formhash" value="5448b1bc"
             pattern = r'name="formhash" value="([a-zA-Z0-9]{8})"'
             match = re.search(pattern, response.text)
             if match:
@@ -137,7 +139,7 @@ class AutoTask:
             else:
                 logging.error("[获取formhash]无法获取formhash")
                 return None, None, None
-            # seccodehash 格式：seccode_cSAbDg cSAbDg
+            # seccodehash 格式: seccode_cSAbDg cSAbDg
             pattern = r'seccode_([a-zA-Z0-9]{6})'
             match = re.search(pattern, response.text)
             if match:
@@ -145,7 +147,7 @@ class AutoTask:
             else:
                 logging.error("[获取seccodehash]无法获取seccodehash")
                 return None, None, None
-            # loginhash 格式：main_messaqge_LCpo4 LCpo4
+            # loginhash 格式: main_messaqge_LCpo4 LCpo4
             pattern = r'main_messaqge_([a-zA-Z0-9]{5})'
             match = re.search(pattern, response.text)
             if match:
@@ -278,7 +280,7 @@ class AutoTask:
                     username_match = re.search(username_pattern, text)
                     if username_match:
                         matched_username = username_match.group(1)
-                        logging.info(f"[登录]成功，当前账号：{matched_username}")
+                        logging.info(f"[登录]成功，当前账号: {matched_username}")
                         return True
                 else:
                     logging.warning("[登录]登录失败")
@@ -561,7 +563,7 @@ class AutoTask:
                 # 删除失效的cookie文件
                 try:
                     os.remove(self.cookie_file)
-                    logging.info(f"[Cookie文件]已删除失效的cookie文件：{self.cookie_file}")
+                    logging.info(f"[Cookie文件]已删除失效的cookie文件: {self.cookie_file}")
                 except Exception as e:
                     logging.error(f"[Cookie文件]删除失效cookie文件失败: {str(e)}")
 

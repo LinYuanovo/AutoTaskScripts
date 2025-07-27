@@ -1,18 +1,20 @@
 """
- 作者:  临渊
- 日期:  2025/6/30
- 小程序:  趣淘卡 (https://a.c1ns.cn/dpukh)
- 功能:  签到、查积分
- 变量:  soy_wxid_data (微信id) 多个账号用换行分割 
-        soy_codetoken_data (微信授权token)
-        soy_codeurl_data (微信授权url)
-        PROXY_API_URL (代理api，返回一条txt文本，内容为代理ip:端口)
- 定时:  一天两次
- cron:  10 8,9 * * *
- 更新日志：
- 2025/6/30  V1.0    初始化脚本
- 2025/7/21  V1.1    适配更多协议
- 2025/7/22  V1.2    修改协议适配器导入方式
+作者: 临渊
+日期: 2025/6/30
+name: code版_趣淘卡
+入口: 微信小程序 (https://a.c1ns.cn/dpukh)
+功能: 签到、查积分
+变量: soy_wxid_data (微信id) 多个账号用换行分割 
+    soy_codetoken_data (微信授权token)
+    soy_codeurl_data (微信授权url)
+    PROXY_API_URL (代理api，返回一条txt文本，内容为代理ip:端口)
+定时: 一天两次
+cron: 10 8,9 * * *
+------------更新日志------------
+2025/6/30   V1.0    初始化脚本
+2025/7/21   V1.1    适配更多协议
+2025/7/22   V1.2    修改协议适配器导入方式
+2025/7/28   V1.3    修改头部注释，以便拉库
 """
 
 import json

@@ -1,19 +1,21 @@
 """
- 作者： 临渊
- 日期： 2025/6/25
- 小程序：   厚工坊
- 功能： 签到、浏览、分享
- 变量：soy_wxid_data (微信id) 多个账号用换行分割 
-      soy_codetoken_data (微信授权token)
-      soy_codeurl_data (微信授权url)
-      PROXY_API_URL (代理api，返回一条txt文本，内容为代理ip:端口)
- 定时： 一天两次
- cron： 10 8,9 * * *
- 更新日志：
- 2025/6/25  V1.0    初始化脚本
- 2025/7/7   V1.1    适配更多协议
- 2025/7/21  V1.2    适配更多协议
- 2025/7/22  V1.3    修改协议适配器导入方式
+作者: 临渊
+日期: 2025/6/25
+name: code版_厚工坊
+入口: 微信小程序
+功能: 签到、浏览、分享
+变量: soy_wxid_data (微信id) 多个账号用换行分割 
+    soy_codetoken_data (微信授权token)
+    soy_codeurl_data (微信授权url)
+    PROXY_API_URL (代理api，返回一条txt文本，内容为代理ip:端口)
+定时: 一天两次
+cron: 10 8,9 * * *
+------------更新日志------------
+2025/6/25   V1.0    初始化脚本
+2025/7/7    V1.1    适配更多协议
+2025/7/21   V1.2    适配更多协议
+2025/7/22   V1.3    修改协议适配器导入方式
+2025/7/28   V1.4    修改头部注释，以便拉库
 """
 
 import random
@@ -47,7 +49,7 @@ if not os.path.exists(wechat_adapter_path):
         print(f"下载微信协议适配器文件失败（网络问题），自行复制一份")
         exit(1)
     except Exception as e:
-        print(f"下载微信协议适配器文件失败（其他错误）：{e}")
+        print(f"下载微信协议适配器文件失败（其他错误）: {e}")
         exit(1)
 from wechatCodeAdapter import WechatCodeAdapter # type: ignore
 
@@ -310,7 +312,7 @@ class AutoTask:
             params = {
                 "opt": "shareData"
             }
-            # 注：requests会字典转换为 key=value&key=value
+            # 注: requests会字典转换为 key=value&key=value
             # 但是嵌套的不行，所以要用json.dumps
             flat_payload = {
                 "SessionID": session.headers["sessionid"],
@@ -406,7 +408,7 @@ class AutoTask:
             # 任务结束后推送日志
             if NOTIFY:
                 title = f"{self.site_name} 运行日志"
-                header = "作者：临渊\n"
+                header = "作者: 临渊\n"
                 content = header + "\n" +"\n".join(self.wechat_code_adapter.log_msgs)
                 notify.send(title, content)
 

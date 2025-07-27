@@ -1,16 +1,18 @@
 """
- 作者：临渊
- 日期：2025/6/17
- 网站：司机社 （https://sijishecn.cc/）
- 功能：登录、签到
- 变量：sijishe='邮箱&密码' 或者 'cookie'
-    自动检测，多个账号用换行分割
-    使用邮箱密码将会进行登录（必须有ocr服务地址）
-    使用cookie将会直接使用
- 定时：一天两次
- cron：10 9,10 * * *
- 更新日志：
- 2025/6/17：初始化，完成签到功能
+作者: 临渊
+日期: 2025/6/17
+name: 司机社
+入口: 网站 (https://sijishecn.cc/)
+功能: 登录、签到
+变量: sijishe='邮箱&密码' 或者 'cookie'
+自动检测，多个账号用换行分割
+使用邮箱密码将会进行登录（必须有ocr服务地址）
+使用cookie将会直接使用
+定时: 一天两次
+cron: 10 9,10 * * *
+------------更新日志------------
+2025/6/17   V1.0    初始化，完成签到功能
+2025/7/28   V1.1    修改头部注释，以便拉库
 """
 
 import requests
@@ -239,9 +241,9 @@ class AutoTask:
                         if match:
                             level = match.group(1)
                             nickname = match.group(2)
-                            logging.info(f"[登录]成功，当前账号：{level} {nickname}")
+                            logging.info(f"[登录]成功，当前账号: {level} {nickname}")
                         else:
-                            logging.info(f"[登录]成功，当前账号：{username_match.group(1)}")
+                            logging.info(f"[登录]成功，当前账号: {username_match.group(1)}")
                         return True
                 else:
                     logging.warning("[登录]登录失败")
@@ -418,7 +420,7 @@ class AutoTask:
             elif "今日已签" in response.text:
                 logging.info("[签到]今日已签到")
             else:
-                logging.warning(f"[签到]失败，返回内容：{response.text}")
+                logging.warning(f"[签到]失败，返回内容: {response.text}")
         except requests.RequestException as e:
             logging.error(f"[签到]发生网络错误: {str(e)}\n{traceback.format_exc()}")
         except Exception as e:
@@ -463,7 +465,7 @@ class AutoTask:
                 # 删除失效的cookie文件
                 try:
                     os.remove(self.cookie_file)
-                    logging.info(f"[Cookie文件]已删除失效的cookie文件：{self.cookie_file}")
+                    logging.info(f"[Cookie文件]已删除失效的cookie文件: {self.cookie_file}")
                 except Exception as e:
                     logging.error(f"[Cookie文件]删除失效cookie文件失败: {str(e)}")
 

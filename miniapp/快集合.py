@@ -1,13 +1,15 @@
 """
- 作者:  临渊
- 日期:  2025/7/21
- 小程序:  快集合 (https://wxaurl.cn/UOdOAJrVwan)
- 功能:  签到、看广告、查询积分
- 变量:  kjh_openid = 'openid' (app/Exp/wxappLogin2 请求中的open_id)
- 定时:  一天两次
- cron:  10 11,12 * * *
- 更新日志：
- 2025/7/21  V1.0   初始化脚本
+作者: 临渊
+日期: 2025/7/21
+name: 快集合
+入口: 微信小程序 (https://wxaurl.cn/UOdOAJrVwan)
+功能: 签到、看广告、查询积分
+变量: kjh_openid = 'openid' (app/Exp/wxappLogin2 请求中的open_id)
+定时: 一天两次
+cron: 10 11,12 * * *
+------------更新日志------------
+2025/7/21   V1.0    初始化脚本
+2025/7/28   V1.1    修改头部注释，以便拉库
 """
 
 import json

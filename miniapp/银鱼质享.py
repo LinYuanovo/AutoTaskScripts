@@ -82,12 +82,11 @@ class AutoTask:
             response = requests.get(url, headers=headers)
             response.raise_for_status()
             response_json = response.json()
-            video_list = response_json['data']
+            video_list = response_json.get('data', [])
             return video_list
         except Exception as e:
             logging.error(f"[获取视频列表]发生错误: {str(e)}\n{traceback.format_exc()}")
             return []
-    
 
     def watch_video(self, host, cookie, video_id, watch_time):
         """

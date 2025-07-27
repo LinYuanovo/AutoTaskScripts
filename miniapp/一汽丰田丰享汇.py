@@ -1,13 +1,15 @@
 """
- 作者:  临渊
- 日期:  2025/6/30
- 小程序:    一汽丰田丰享汇 (https://s.c1ns.cn/IukuX)
- 功能:  签到、查积分
- 变量:  yqftfxh = 'Authorization' (fxh.ftms.com.cn域名下请求中Authorization值)
- 定时:  一天两次
- cron:  10 8,9 * * *
- 更新日志：
- 2025/6/30 V1.0 初始化脚本
+作者: 临渊
+日期: 2025/6/30
+小程序: 一汽丰田丰享汇
+入口: 微信小程序 (https://s.c1ns.cn/IukuX)
+功能: 签到、查积分
+变量: yqftfxh = 'Authorization' (fxh.ftms.com.cn域名下请求中Authorization值)
+定时: 一天两次
+cron: 10 8,9 * * *
+------------更新日志------------
+2025/6/30   V1.0    初始化脚本
+2025/7/28   V1.1    修改头部注释，以便拉库
 """
 
 MULTI_ACCOUNT_SPLIT = ["\n", "@"] # 分隔符列表

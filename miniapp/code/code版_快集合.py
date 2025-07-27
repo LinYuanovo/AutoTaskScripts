@@ -1,17 +1,19 @@
 """
- 作者:  临渊
- 日期:  2025/7/21
- 小程序:  快集合 (https://wxaurl.cn/UOdOAJrVwan)
- 功能:  签到、看广告、查询积分
- 变量:  soy_wxid_data (微信id) 多个账号用换行分割 
-        soy_codetoken_data (微信授权token)
-        soy_codeurl_data (微信授权url)
-        PROXY_API_URL (代理api，返回一条txt文本，内容为代理ip:端口)
- 定时:  一天两次
- cron:  10 11,12 * * *
- 更新日志：
- 2025/7/21  V1.0   初始化脚本
- 2025/7/22  V1.1    修改协议适配器导入方式
+作者: 临渊
+日期: 2025/7/21
+name: code版_快集合
+入口: 微信小程序 (https://wxaurl.cn/UOdOAJrVwan)
+功能: 签到、看广告、查询积分
+变量: soy_wxid_data (微信id) 多个账号用换行分割 
+    soy_codetoken_data (微信授权token)
+    soy_codeurl_data (微信授权url)
+    PROXY_API_URL (代理api，返回一条txt文本，内容为代理ip:端口)
+定时: 一天两次
+cron: 10 11,12 * * *
+------------更新日志------------
+2025/7/21   V1.0   初始化脚本
+2025/7/22   V1.1    修改协议适配器导入方式
+2025/7/28   V1.2    修改头部注释，以便拉库
 """
 
 import json

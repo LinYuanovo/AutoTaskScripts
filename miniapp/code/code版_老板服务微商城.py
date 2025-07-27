@@ -1,16 +1,18 @@
 """
- 作者:  临渊
- 日期:  2025/7/23
- 小程序:  老板服务微商城 (https://a.c1ns.cn/OIFBt)
- 功能:  签到、做部分任务、查积分
- 变量:  soy_wxid_data (微信id) 多个账号用换行分割 
-        soy_codetoken_data (微信授权token)
-        soy_codeurl_data (微信授权url)
-        PROXY_API_URL (代理api，返回一条txt文本，内容为代理ip:端口)
- 定时:  一天两次
- cron:  10 11,12 * * *
- 更新日志：
- 2025/7/23  V1.0    初始化脚本
+作者: 临渊
+日期: 2025/7/23
+name: code版_老板服务微商城
+入口: 微信小程序 (https://a.c1ns.cn/OIFBt)
+功能: 签到、做部分任务、查积分
+变量: soy_wxid_data (微信id) 多个账号用换行分割 
+    soy_codetoken_data (微信授权token)
+    soy_codeurl_data (微信授权url)
+    PROXY_API_URL (代理api，返回一条txt文本，内容为代理ip:端口)
+定时: 一天两次
+cron: 10 11,12 * * *
+------------更新日志------------
+2025/7/23   V1.0    初始化脚本
+2025/7/28   V1.1    修改头部注释，以便拉库
 """
 import json
 import random

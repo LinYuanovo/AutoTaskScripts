@@ -1,17 +1,19 @@
 """
- 作者:  临渊
- 日期:  2025/7/2
- 小程序:  中免日上 (https://a.c1ns.cn/qbFEB)
- 功能:  签到、查积分、小游戏
- 变量:  zmrs_token = 'Accesstoken' (https://api.cdfsunrise.com/restfulapi/Account/getAccountInfo 请求中的Accesstoken)
- 定时:  一天两次
- cron:  10 8,9 * * *
- 更新日志：
- 2025/7/2   V1.0    初始化脚本
- 2025/7/3   V1.1    增加小游戏签到、浏览、抽奖、做包子
- 2025/7/7   V1.2    通知可以设置环境变量LY_NOTIFY
- 2025/7/8   V1.3    尝试修复火爆问题
- 2025/7/19  V1.4    去除抽奖、增加一个浏览
+作者: 临渊
+日期: 2025/7/2
+name: 中免日上
+入口: 微信小程序 (https://a.c1ns.cn/qbFEB)
+功能: 签到、查积分、小游戏
+变量: zmrs_token = 'Accesstoken' (https://api.cdfsunrise.com/restfulapi/Account/getAccountInfo 请求中的Accesstoken)
+定时: 一天两次
+cron: 10 8,9 * * *
+------------更新日志------------
+2025/7/2    V1.0    初始化脚本
+2025/7/3    V1.1    增加小游戏签到、浏览、抽奖、做包子
+2025/7/7    V1.2    通知可以设置环境变量LY_NOTIFY
+2025/7/8    V1.3    尝试修复火爆问题
+2025/7/19   V1.4    去除抽奖、增加一个浏览
+2025/7/28   V1.5    修改头部注释，以便拉库
 """
 
 import json

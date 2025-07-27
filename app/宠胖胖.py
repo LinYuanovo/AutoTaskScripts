@@ -1,14 +1,16 @@
 """
- 作者:  临渊
- 日期:  2025/7/22
- APP:   宠胖胖 (https://ch.mewpet.cn/2vPn)
- 功能:  签到、做部分任务、领取在线和任务奖励、查询积分
- 变量:  cpp_token = 'Authorization' (chongpangpang.com请求下的Authorization或token值)
- 定时:  一天四次
- cron:  10 8,12,16,20 * * *
- 更新日志：
- 2025/7/22  V1.0    初始化脚本
- 2025/7/23  V1.1    修复报错，去除引入微信协议适配器
+作者: 临渊
+日期: 2025/7/22
+name: 宠胖胖
+入口: APP (https://ch.mewpet.cn/2vPn)
+功能: 签到、做部分任务、领取在线和任务奖励、查询积分
+变量: cpp_token = 'Authorization' (chongpangpang.com请求下的Authorization或token值)
+定时: 一天四次
+cron: 10 8,12,16,20 * * *
+------------更新日志------------
+2025/7/22   V1.0    初始化脚本
+2025/7/23   V1.1    修复报错，去除引入微信协议适配器
+2025/7/28   V1.2    修改头部注释，以便拉库
 """
 
 import json

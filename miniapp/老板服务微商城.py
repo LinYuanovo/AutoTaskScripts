@@ -1,13 +1,14 @@
 """
- 作者:  临渊
- 日期:  2025/7/23
- 小程序:  老板服务微商城 (https://a.c1ns.cn/OIFBt)
- 功能:  签到、做部分任务、查积分
- 变量:  lbfwwsc_openid = 'openid' (vip.foxech.com域名请求中的openid值)
- 定时:  一天两次
- cron:  10 11,12 * * *
- 更新日志：
- 2025/7/23  V1.0    初始化脚本
+作者: 临渊
+日期: 2025/7/23
+name: 老板服务微商城
+入口: 微信小程序 (https://a.c1ns.cn/OIFBt)
+功能: 签到、做部分任务、查积分
+变量: lbfwwsc_openid = 'openid' (vip.foxech.com域名请求中的openid值)
+定时: 一天两次
+cron: 10 11,12 * * *
+------------更新日志------------
+2025/7/23  V1.0    初始化脚本
 """
 import json
 import random

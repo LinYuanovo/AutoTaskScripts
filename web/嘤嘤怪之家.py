@@ -1,17 +1,19 @@
 """
- 作者：临渊
- 日期：2025/6/8
- 网站：嘤嘤怪之家 （https://yyg.boats/）
- 功能：登录、签到、评论（每日上限30积分）
- 变量：yyg='账号&密码'  多个账号用换行分割
-     DDDD_OCR_URL (dddd_ocr地址)
- 定时：一天两次
- cron：10 9,10 * * *
- 更新日志：
- 2025/6/8：初始化，完成签到功能
- 2025/6/10：添加评论功能
- 2025/6/11：优化代码结构，使用session管理cookie，添加查询积分功能（不一定成功）
- 2025/7/23：更新域名
+作者: 临渊
+日期: 2025/6/8
+name: 嘤嘤怪之家
+入口: 网站 (https://yyg.boats/)
+功能: 登录、签到、评论（每日上限30积分）
+变量: yyg='账号&密码'  多个账号用换行分割
+    DDDD_OCR_URL (dddd_ocr地址)
+定时: 一天两次
+cron: 10 9,10 * * *
+------------更新日志------------
+2025/6/8    V1.0    初始化，完成签到功能
+2025/6/10   V1.1    添加评论功能
+2025/6/11   V1.2    优化代码结构，使用session管理cookie，添加查询积分功能（不一定成功）
+2025/7/23   V1.3    更新域名
+2025/7/28   V1.4    修改头部注释，以便拉库
 """
 
 import requests
@@ -311,8 +313,8 @@ class AutoTask:
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36'
             }
             response = session.get(url, headers=headers)
-            # 正则匹配积分记录里第一个，即 积分：xxx
-            balance = re.search(r'积分：(\d+)', response.text)
+            # 正则匹配积分记录里第一个，即 积分: xxx
+            balance = re.search(r'积分: (\d+)', response.text)
             if balance:
                 return balance.group(1)
             else:
@@ -346,7 +348,7 @@ class AutoTask:
             time.sleep(random.randint(16, 30))
         # 获取用户积分
         balance = self.get_user_balance(host, session)
-        logging.info(f"[账号]当前积分：{balance}")
+        logging.info(f"[账号]当前积分: {balance}")
 
     def run(self):
         """
