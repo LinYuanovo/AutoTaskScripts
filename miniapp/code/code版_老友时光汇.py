@@ -16,6 +16,7 @@
  2025/7/20  V1.3    修复签到及问答无效
  2025/7/21  V1.4    适配更多协议
  2025/7/22  V1.5    修改协议适配器导入方式
+ 2025/7/27  V1.6    修复冻结后续账号异常退出
 """
 
 import json
@@ -316,10 +317,10 @@ class AutoTask:
                 return exam_id, exam_answer
             else:
                 self.log(f"[{self.nickname}] 开始问答: {response_json['message']}", level="warning")
-                return False
+                return None, None
         except Exception as e:
             self.log(f"[{self.nickname}] 开始问答: 发生错误: {str(e)}\n{traceback.format_exc()}", level="error")
-            return False
+            return None, None
         
     def submit_answer(self, session, exam_id, exam_activity_id, exam_answer):
         """
@@ -476,13 +477,16 @@ class AutoTask:
                                     for _ in range(left_count):
                                         # 开始问答
                                         exam_id, exam_answer = self.start_exam(session, exam['id'])
-                                        time.sleep(random.randint(3, 5))
-                                        # 提交答案
-                                        self.submit_answer(session, exam_id, exam['id'], exam_answer)
-                                        time.sleep(random.randint(30, 40))
-                                        # 提交问答
-                                        self.submit_exam(session, exam_id, exam['id'])
-                                        time.sleep(random.randint(3, 5))
+                                        if exam_id and exam_answer:
+                                            time.sleep(random.randint(3, 5))
+                                            # 提交答案
+                                            self.submit_answer(session, exam_id, exam['id'], exam_answer)
+                                            time.sleep(random.randint(30, 40))
+                                            # 提交问答
+                                            self.submit_exam(session, exam_id, exam['id'])
+                                            time.sleep(random.randint(3, 5))
+                                        else:
+                                            break
                             # 查询用户信息
                             self.get_user_info(session, log=True)
                             if self.credits >= 50:
