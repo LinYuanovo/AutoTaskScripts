@@ -1,3 +1,18 @@
+"""
+作者: 临渊
+日期: 2025/7/22
+name: 微信协议适配器
+变量: soy_wxid_data (微信id) 多个账号用换行分割 
+        soy_codetoken_data (微信授权token)
+        soy_codeurl_data (微信授权url)
+定时: 一天两次
+cron: 10 11,12 * * *
+------------------------------------------------------------
+更新日志:
+2025/7/22   V1.0    初始化
+2025/7/27   V1.1    适配StarBot Pro
+"""
+
 import requests
 import os
 import logging
