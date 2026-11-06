@@ -2,11 +2,11 @@
 作者: 临渊
 日期: 2025/6/17
 name: 司机社
-入口: 网站 (https://sjs47.com/)
+入口: 网站发布页 (https://47447.net/)
 功能: 登录、签到
-变量: sijishe='邮箱&密码' 或者 'cookie'
+变量: sijishe='用户名或邮箱&密码' 或者 'cookie'
 自动检测，多个账号用换行分割
-使用邮箱密码将会进行登录（必须有ocr服务地址）
+使用账号密码将会进行登录（出现验证码时需要ocr服务地址）
 使用cookie将会直接使用
 定时: 一天两次
 cron: 10 9,10 * * *
@@ -14,6 +14,7 @@ cron: 10 9,10 * * *
 2025/6/17   V1.0    初始化，完成签到功能
 2025/7/28   V1.1    修改头部注释，以便拉库
 2025/8/27   V1.2    增加尝试获取最新域名
+2026/11/6   V1.3    兼容无验证码登录、新版发布页和密码表单
 """
 
 import requests
@@ -26,12 +27,13 @@ import base64
 import random
 import time
 import json
+import hashlib
 from bs4 import BeautifulSoup
 from datetime import datetime
 
 DDDD_OCR_URL = os.getenv("DDDD_OCR_URL") or "" # dddd_ocr地址
 DEFAULT_GUIDE_URL = "https://47447.net/" # 默认发布地址
-DEFAULT_HOST = "sjs47.com" # 默认域名
+DEFAULT_HOST = "sjsdd.com" # 默认域名
 
 class AutoTask:
     def __init__(self, site_name, default_host):
@@ -43,6 +45,7 @@ class AutoTask:
         self.site_name = site_name
         self.default_host = default_host
         self.cookie_file = f"{site_name}_cookie.json"
+        self.password_md5 = False
         self.setup_logging()
 
     def setup_logging(self):
@@ -61,7 +64,7 @@ class AutoTask:
     def check_env(self):
         """
         检查环境变量
-        :return: 邮箱和密码，或者cookie
+        :return: 用户名或邮箱和密码，或者cookie
         """
         try:
             env = os.getenv("sijishe")
@@ -71,7 +74,7 @@ class AutoTask:
             envs = env.split('\n')
             for env in envs:
                 if '&' in env:
-                    email, password = env.split('&')
+                    email, password = env.split('&', 1)
                     yield email, password, None
                 else:
                     yield None, None, env
@@ -86,20 +89,29 @@ class AutoTask:
         """
         try:
             url = DEFAULT_GUIDE_URL
-            response = requests.get(url)
+            with requests.Session() as session:
+                response = session.get(url, timeout=30)
+                if response.status_code == 403 and response.cookies:
+                    response = session.get(url, timeout=30)
+                response.raise_for_status()
             response.encoding = 'utf-8'
             soup = BeautifulSoup(response.text, 'html.parser')
-            links = soup.find_all('a')
+            links = soup.find_all('a', href=True)
+            candidates = []
             for link in links:
                 link_text = link.get_text(strip=True)
-                if re.search(r'打开网站', link_text):
-                    href_value = link.get('href')
-                    if href_value.startswith("http"):
-                        host = href_value.split("//")[1]
-                        logging.info(f"[获取最新域名]最新域名: {host}")
-                        return host
-                    else:
-                        return href_value
+                if re.search(r'打开网站|立即访问|^访问$', link_text):
+                    candidates.append(link['href'])
+            for script in soup.find_all('script'):
+                config = re.search(r'\blines\s*:\s*\[(.*?)\]', script.get_text(), re.S)
+                if config:
+                    candidates.extend(re.findall(r'\burl\s*:\s*[\'"](https?://[^\'"\s]+)[\'"]', config.group(1)))
+            for candidate in candidates:
+                parsed = urllib.parse.urlsplit(candidate if '://' in candidate else f'https://{candidate.lstrip("/")}')
+                if parsed.scheme in ('http', 'https') and parsed.hostname:
+                    host = parsed.netloc
+                    logging.info(f"[获取最新域名]最新域名: {host}")
+                    return host
             return DEFAULT_HOST
         except Exception as e:
             logging.error(f"[获取最新域名]发生错误: {str(e)}\n{traceback.format_exc()}")
@@ -110,41 +122,50 @@ class AutoTask:
         获取参数
         :param host: 域名
         :param session: 会话对象
-        :return: formhash, seccodehash, loginhash
+        :return: formhash, seccodehash（无验证码时为空字符串）, loginhash
         """
         try:
+            self.password_md5 = False
             url = f"https://{host}/member.php?mod=logging&action=login&infloat=yes&frommessage&inajax=1&ajaxtarget=messagelogin"
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36 Edg/137.0.0.0',
                 'Host': host
             }
-            response = session.get(url, headers=headers)
+            response = session.get(url, headers=headers, timeout=30)
+            if response.status_code == 403 and response.cookies:
+                response = session.get(url, headers=headers, timeout=30)
             response.raise_for_status()
 
-            pattern = r'name="formhash" value="([a-zA-Z0-9]{8})"'
-            match = re.search(pattern, response.text)
-            if match:
-                formhash = match.group(1)
-            else:
+            content = re.search(r'<!\[CDATA\[(.*?)\]\]>', response.text, re.S)
+            soup = BeautifulSoup(content.group(1) if content else response.text, 'html.parser')
+            form = soup.find('form', id=re.compile(r'^loginform_'))
+            if form is None:
+                logging.error("[获取参数]未找到登录表单")
+                return None, None, None
+            formhash_input = form.find('input', attrs={'name': 'formhash'})
+            formhash = formhash_input.get('value') if formhash_input else None
+            if not formhash:
                 logging.error("[获取formhash]无法获取formhash")
                 return None, None, None
 
-            pattern = r'seccode_([a-zA-Z0-9]{6})'
-            match = re.search(pattern, response.text)
-            if match:
-                seccodehash = match.group(1)
-            else:
-                logging.error("[获取seccodehash]无法获取seccodehash")
-                return None, None, None
-
-            pattern = r'main_messaqge_([a-zA-Z0-9]{5})'
-            match = re.search(pattern, response.text)
-            if match:
-                loginhash = match.group(1)
-            else:
+            action = urllib.parse.urlsplit(form.get('action', ''))
+            loginhash = urllib.parse.parse_qs(action.query).get('loginhash', [None])[0]
+            if not loginhash:
+                loginhash = form.get('id', '')[len('loginform_'):]
+            if not loginhash:
                 logging.error("[获取loginhash]无法获取loginhash")
                 return None, None, None
 
+            seccode_input = form.find('input', attrs={'name': 'seccodehash'})
+            seccodehash = seccode_input.get('value', '') if seccode_input else ''
+            if not seccodehash:
+                match = re.search(r'(?:seccode_|updateseccode\([\'"])([a-zA-Z0-9]+)', str(form))
+                if match:
+                    seccodehash = match.group(1)
+            if not seccodehash and form.find('input', attrs={'name': 'seccodeverify'}):
+                logging.error("[获取seccodehash]页面要求验证码但无法获取seccodehash")
+                return None, None, None
+            self.password_md5 = bool(re.search(r'\bpwmd5\s*\(', form.get('onsubmit', '')))
             return formhash, seccodehash, loginhash
         except requests.RequestException as e:
             logging.warning(f"[获取参数]发生网络错误: {str(e)}\n{traceback.format_exc()}")
@@ -237,7 +258,7 @@ class AutoTask:
         """
         登录
         :param host: 域名
-        :param username: 邮箱
+        :param username: 用户名或邮箱
         :param password: 密码
         :param formhash: formhash
         :param captcha: 验证码文字
@@ -248,23 +269,37 @@ class AutoTask:
         """
         try:
             url = f"https://{host}/member.php?mod=logging&action=login&loginsubmit=yes&loginhash={loginhash}&inajax=1"
-            payload = f"formhash={formhash}&referer=https://{host}/home.php?mod=spacecp&ac=credit&showcredit=1&loginfield=email&username={username}&password={password}&questionid=0&answer=&seccodehash={seccodehash}&seccodemodid=member::logging&seccodeverify={captcha}&cookietime=2592000"
+            payload = {
+                'formhash': formhash,
+                'referer': f'https://{host}/home.php?mod=spacecp&ac=credit&showcredit=1',
+                'loginfield': 'email' if '@' in username else 'username',
+                'username': username,
+                'password': hashlib.md5(password.encode('utf-8')).hexdigest() if self.password_md5 else password,
+                'questionid': '0',
+                'answer': '',
+                'cookietime': '2592000'
+            }
+            if seccodehash:
+                payload.update({
+                    'seccodehash': seccodehash,
+                    'seccodemodid': 'member::logging',
+                    'seccodeverify': captcha
+                })
             headers = {
                 'Referer': f'https://{host}/home.php?mod=spacecp&ac=credit&showcredit=1',
                 'content-type': 'application/x-www-form-urlencoded',
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36 Edg/137.0.0.0',
                 'Host': host
             }
-            payload = urllib.parse.quote(payload, safe='=&')
-            response = session.post(url, headers=headers, data=payload)
+            response = session.post(url, headers=headers, data=payload, timeout=30)
             response.raise_for_status()
             pattern = r'<!\[CDATA\[(.*?)\]\]>'
-            match = re.search(pattern, response.text)
+            match = re.search(pattern, response.text, re.S)
             if match:
                 text = match.group(1)
                 if "欢迎您回来" in text:
                     username_pattern = r'欢迎您回来，(.*?)，现在将转入登录前页面'
-                    username_match = re.search(username_pattern, text)
+                    username_match = re.search(username_pattern, text, re.S)
                     if username_match:
                         pattern = r'<font color="#00FFCC">(.*?)</font> (.*?)'
                         match = re.search(pattern, text)
@@ -274,7 +309,7 @@ class AutoTask:
                             logging.info(f"[登录]成功，当前账号: {level} {nickname}")
                         else:
                             logging.info(f"[登录]成功，当前账号: {username_match.group(1)}")
-                        return True
+                    return True
                 else:
                     logging.warning("[登录]登录失败")
                     return False
@@ -487,11 +522,11 @@ class AutoTask:
                     else:
                         logging.warning(f"[Cookie文件]账号 {email} 的Cookie已失效")
 
-                logging.info("[Cookie文件]所有账号的Cookie都已失效，尝试使用邮箱密码登录")
+                logging.info("[Cookie文件]所有账号的Cookie都已失效，尝试使用账号密码登录")
                 # 检查环境变量中是否有邮箱密码
                 env = os.getenv("sijishe")
                 if not env or '&' not in env:
-                    logging.error("[Cookie文件]所有Cookie已失效且环境变量中未找到邮箱密码，无法继续")
+                    logging.error("[Cookie文件]所有Cookie已失效且环境变量中未找到账号密码，无法继续")
                     return None
                 # 删除失效的cookie文件
                 try:
@@ -525,26 +560,28 @@ class AutoTask:
                         logging.warning(f"[Cookie]账号 {email} 的Cookie已失效")
                         continue
                 else:
-                    logging.info(f"[检查环境变量]检测到邮箱密码，将进行登录")
+                    logging.info(f"[检查环境变量]检测到账号密码，将进行登录")
                     formhash, seccodehash, loginhash = self.get_param(self.default_host, session)
-                    if not all([formhash, seccodehash, loginhash]):
+                    if not all([formhash, loginhash]):
                         logging.error("获取参数失败，跳过当前账号")
                         continue
 
-                    max_retries = 3
-                    retry_count = 0
-                    while retry_count < max_retries:
-                        login_in_captcha = self.get_captcha_img(self.default_host, seccodehash, session)
-                        login_in_captcha_text = self.get_captcha_text(login_in_captcha, ocr_url)
-                        if self.check_captcha(self.default_host, login_in_captcha_text, session, seccodehash):
-                            break
-
-                        retry_count += 1
-                        if retry_count < max_retries:
-                            logging.warning(f"[验证码]验证失败，第{retry_count}次重试")
-                            time.sleep(5)
+                    login_in_captcha_text = ''
+                    if seccodehash:
+                        if not ocr_url:
+                            logging.error("[验证码]页面要求验证码，请配置DDDD_OCR_URL，跳过当前账号")
+                            continue
+                        max_retries = 3
+                        for retry_count in range(max_retries):
+                            login_in_captcha = self.get_captcha_img(self.default_host, seccodehash, session)
+                            login_in_captcha_text = self.get_captcha_text(login_in_captcha, ocr_url) if login_in_captcha else None
+                            if login_in_captcha_text and self.check_captcha(self.default_host, login_in_captcha_text, session, seccodehash):
+                                break
+                            if retry_count < max_retries - 1:
+                                logging.warning(f"[验证码]验证失败，第{retry_count + 1}次重试")
+                                time.sleep(5)
                         else:
-                            logging.error("[验证码]验证失败，已达到最大重试次数")
+                            logging.error("[验证码]验证失败，已达到最大重试次数，跳过当前账号")
                             continue
 
                     if not self.login_in(self.default_host, email, password, formhash, login_in_captcha_text, session, loginhash, seccodehash):
